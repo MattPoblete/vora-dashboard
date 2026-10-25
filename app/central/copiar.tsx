@@ -16,7 +16,7 @@ export function Mensaje({ texto }: { texto: string }) {
         ref={ref}
         defaultValue={texto}
         rows={12}
-        className="w-full resize-y rounded-xl border border-border bg-surface-2 p-3 text-sm leading-relaxed text-text outline-none focus:border-primary"
+        className="w-full resize-y rounded-lg border border-border bg-surface-2 p-3 text-sm leading-relaxed text-text outline-none focus:border-primary"
       />
       <div className="mt-2 flex flex-wrap items-center gap-3">
         <button
@@ -47,7 +47,7 @@ export function Generador({ boton, texto }: { boton: string; texto: string }) {
       <button
         type="button"
         onClick={() => setAbierto(true)}
-        className="rounded-xl border border-border bg-surface-2 px-4 py-2 font-medium hover:bg-border"
+        className="btn btn-secundario"
       >
         {boton}
       </button>

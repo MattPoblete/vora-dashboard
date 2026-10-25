@@ -14,7 +14,7 @@ export function Todos() {
         const all = boxes.every((b) => b.checked);
         boxes.forEach((b) => (b.checked = !all));
       }}
-      className="shrink-0 whitespace-nowrap rounded-full border border-border bg-surface-2 px-4 py-1.5 text-sm hover:bg-border"
+      className="btn btn-secundario btn-chico shrink-0"
     >
       Marcar todos
     </button>

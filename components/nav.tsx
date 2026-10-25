@@ -17,7 +17,7 @@ async function NavInner() {
     principal.splice(Math.floor(principal.length / 2), 0, {
       id: "resumen",
       href: "/",
-      label: "Resumen",
+      label: "Inicio",
     });
   const perfil = await getPerfil();
   return (

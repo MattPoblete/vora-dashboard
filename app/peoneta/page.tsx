@@ -1,11 +1,10 @@
-import { Suspense } from "react";
 import { connection } from "next/server";
 import { db, requirePermiso } from "@/lib/session";
 import { COURIERS } from "@/lib/central";
 import { cargarDespacho } from "@/lib/despacho";
 import { COLOR_COURIER } from "@/lib/empaque";
 import { Panel } from "@/components/panel";
-import { AutoRefresh } from "@/components/auto-refresh";
+import { Pagina } from "@/components/pagina";
 import { Seccion } from "./seccion";
 
 async function Tablero() {
@@ -15,7 +14,7 @@ async function Tablero() {
   if (!paquetes.length)
     return (
       <Panel>
-        <p className="py-10 text-center text-xl text-muted">
+        <p className="py-12 text-center text-muted">
           No hay paquetes por despachar.
         </p>
       </Panel>
@@ -49,23 +48,13 @@ async function Tablero() {
 
 export default function Page() {
   return (
-    <main className="relative min-h-screen overflow-hidden px-4 pb-32 pt-6 text-text sm:px-8">
-      <AutoRefresh />
-      <div className="relative mx-auto max-w-3xl">
-        <header className="mb-5 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-semibold">Despacho</h1>
-            <p className="text-muted">
-              Paquetes por enviar · se actualiza solo
-            </p>
-          </div>
-        </header>
-        <Suspense
-          fallback={<p className="text-center text-muted">Cargando…</p>}
-        >
-          <Tablero />
-        </Suspense>
-      </div>
-    </main>
+    <Pagina
+      titulo="Despacho"
+      subtitulo="Paquetes por enviar · se actualiza solo"
+      vivo
+      angosto
+    >
+      <Tablero />
+    </Pagina>
   );
 }

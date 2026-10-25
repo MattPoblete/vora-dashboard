@@ -23,7 +23,7 @@ export function PanelesVenta({
       aria-selected={tab === id}
       aria-controls={`panel-${id}`}
       onClick={() => setTab(id)}
-      className={`flex h-12 flex-1 items-center justify-center gap-2.5 rounded-xl px-4 text-base font-medium transition ${
+      className={`flex h-10 flex-1 items-center justify-center rounded-lg px-4 text-sm font-medium transition ${
         tab === id
           ? "bg-surface text-text shadow-sm"
           : "text-muted hover:text-text"
@@ -38,7 +38,7 @@ export function PanelesVenta({
       <div
         role="tablist"
         aria-label="Venta"
-        className="mb-4 flex gap-1 rounded-2xl bg-surface-2 p-1 lg:hidden"
+        className="mb-4 flex gap-1 rounded-xl bg-surface-2 p-1 lg:hidden"
       >
         {boton("form", "Agregar")}
         {boton("ultimas", `Últimas ventas · ${cantidad}`)}

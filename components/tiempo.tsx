@@ -1,6 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { duracion } from "@/lib/formato";
 
 const subscribe = (cb: () => void) => {
   const t = setInterval(cb, 15000);
@@ -21,10 +22,12 @@ export function Tiempo({ desde }: { desde: string }) {
       ? "bg-success/20 text-success-fg"
       : min <= 10
         ? "bg-warning/20 text-warning-fg"
-        : "bg-danger/30 text-danger-fg";
+        : "bg-danger/20 text-danger-fg";
   return (
-    <span className={`rounded-full px-3 py-1 text-sm tabular-nums ${color}`}>
-      {min < 1 ? "recién" : `hace ${min} min`}
+    <span
+      className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium tabular-nums ${color}`}
+    >
+      {min < 1 ? "recién" : `hace ${duracion(min)}`}
     </span>
   );
 }

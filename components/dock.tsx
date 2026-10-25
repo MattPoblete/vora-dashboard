@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   DashboardSquare01Icon,
@@ -27,47 +27,25 @@ const ICONOS = {
 
 export type ItemDock = { id: keyof typeof ICONOS; href: string; label: string };
 
-// compact on phones so the nine buttons fit a 390px screen
-const tam = "size-10 sm:size-[50px]";
-
-// the tooltip lives next to the button (not inside it) so it does not grow with the hover zoom
-function Con({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="group/dock relative">
-      {children}
-      <span
-        role="tooltip"
-        className="pointer-events-none absolute bottom-full left-1/2 mb-4 -translate-x-1/2 whitespace-nowrap rounded-lg bg-surface-2 px-3 py-1.5 text-xs font-medium text-text opacity-0 shadow-lg ring-1 ring-border transition-opacity duration-150 group-hover/dock:opacity-100 group-focus-within/dock:opacity-100"
-      >
-        {label}
-      </span>
-    </div>
-  );
-}
-
-// layout + motion shared by every dock button; colors live in the three states below (never both in one string,
-// otherwise hover:bg-* and bg-* would compete and the winner would depend on CSS order)
-const boton = `relative grid ${tam} place-items-center rounded-xl transition-colors focus-visible:outline-2 focus-visible:outline-primary`;
-const botonRedondo = boton.replace(`rounded-xl`, `rounded-full`);
-const reposo =
-  "text-text/80 hover:bg-surface-2 hover:text-text focus-visible:bg-surface-2 focus-visible:text-text";
-const actual_ =
-  "bg-primary text-on-primary hover:bg-primary-hover focus-visible:bg-primary-hover";
+// icon over its label; narrow enough on a phone for five sections plus the account button in 390px
+const boton =
+  "flex h-12 w-14 flex-col items-center justify-center gap-0.5 rounded-xl text-[11px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-primary sm:w-16";
+// colors live in the two states (never both in one string, otherwise hover:bg-* and bg-* would compete)
+const reposo = "text-muted hover:bg-surface-2 hover:text-text";
+const actual_ = "bg-primary-soft text-primary";
 const esActivo = (item: ItemDock, actual: string) =>
   item.href === "/" ? actual === "/" : actual.startsWith(item.href);
 
 function Enlace({ item, activo }: { item: ItemDock; activo: boolean }) {
   return (
-    <Con label={item.label}>
-      <Link
-        href={item.href}
-        aria-label={item.label}
-        aria-current={activo ? "page" : undefined}
-        className={`${boton} ${activo ? actual_ : reposo}`}
-      >
-        <HugeiconsIcon icon={ICONOS[item.id]} size={22} strokeWidth={1.7} />
-      </Link>
-    </Con>
+    <Link
+      href={item.href}
+      aria-current={activo ? "page" : undefined}
+      className={`${boton} ${activo ? actual_ : reposo}`}
+    >
+      <HugeiconsIcon icon={ICONOS[item.id]} size={20} strokeWidth={1.8} />
+      {item.label}
+    </Link>
   );
 }
 
@@ -134,34 +112,27 @@ function MenuUsuario({
   const enMenu =
     actual.startsWith("/cuenta") || actual.startsWith("/configuracion");
   return (
-    <div ref={caja} className="group/dock relative">
+    <div ref={caja} className="relative">
       <button
         type="button"
         aria-label={`Menú de ${usuario.nombre}`}
         aria-haspopup="menu"
         aria-expanded={abierto}
         onClick={() => setAbierto((v) => !v)}
-        className={`${botonRedondo} ${abierto || enMenu ? actual_ : reposo}`}
+        className={`${boton} ${abierto || enMenu ? actual_ : reposo}`}
       >
         {usuario.avatar ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={`/api/avatares/${usuario.avatar}`}
             alt=""
-            className="size-full rounded-full object-cover"
+            className="size-5 rounded-full object-cover"
           />
         ) : (
-          <HugeiconsIcon icon={User02Icon} size={16} strokeWidth={1.8} />
+          <HugeiconsIcon icon={User02Icon} size={20} strokeWidth={1.8} />
         )}
+        Cuenta
       </button>
-      {!abierto && (
-        <span
-          role="tooltip"
-          className="pointer-events-none absolute bottom-full left-1/2 mb-4 -translate-x-1/2 whitespace-nowrap rounded-lg bg-surface-2 px-3 py-1.5 text-xs font-medium text-text opacity-0 shadow-lg ring-1 ring-border transition-opacity duration-150 group-hover/dock:opacity-100"
-        >
-          {usuario.nombre}
-        </span>
-      )}
       {abierto && (
         <ul
           role="menu"
@@ -197,8 +168,7 @@ function MenuUsuario({
   );
 }
 
-// Floating dock at the bottom (sections, summary in the middle) with the profile circle at its end.
-// Labels show on hover/focus.
+// Floating dock at the bottom (sections, summary in the middle) with the account button at its end.
 export function Dock({
   principal,
   usuario,
@@ -211,16 +181,18 @@ export function Dock({
   salir: () => void | Promise<void>;
 }) {
   const actual = usePathname();
+  // the print view of the labels is a sheet, not an app screen
+  if (actual.startsWith("/empaquetar/etiquetas")) return null;
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex justify-center px-2">
       <nav
         aria-label="Navegación"
-        className="pointer-events-auto flex items-center gap-0.5 rounded-2xl border border-border bg-surface p-1.5 shadow-lg sm:gap-1"
+        className="pointer-events-auto flex max-w-full items-center gap-0.5 rounded-2xl border border-border bg-surface p-1 shadow-lg sm:gap-1"
       >
         {principal.map((it) => (
           <Enlace key={it.id} item={it} activo={esActivo(it, actual)} />
         ))}
-        <span aria-hidden className="mx-1 h-6 w-px bg-border" />
+        <span aria-hidden className="mx-0.5 h-8 w-px shrink-0 bg-border" />
         <MenuUsuario usuario={usuario} admin={admin} salir={salir} />
       </nav>
     </div>

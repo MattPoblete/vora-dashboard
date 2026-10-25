@@ -1,4 +1,5 @@
 import { Panel } from "@/components/panel";
+import { Archivo } from "@/components/archivo";
 import { nombreGrupo, type Grupo } from "@/lib/grupos";
 import { db } from "@/lib/session";
 import { Boton, Form } from "../central/form";
@@ -6,12 +7,9 @@ import { crearGrupo, guardarGrupo } from "./grupos-actions";
 
 type Vendedor = { id: number; usuario: string; vendedores: string | null };
 
-const campo =
-  "h-11 w-full rounded-xl border border-border bg-surface-2 px-3 text-text outline-none placeholder:text-muted/70 focus:border-primary";
+const campo = "campo";
 const caja =
   "flex cursor-pointer items-center gap-3 rounded-xl border border-border bg-surface-2/50 p-3 has-[:checked]:border-primary has-[:checked]:bg-primary-soft";
-const archivo =
-  "block w-full text-sm text-muted file:mr-3 file:rounded-lg file:border-0 file:bg-surface-2 file:px-3 file:py-2 file:text-text hover:file:bg-border";
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -38,7 +36,7 @@ function Vendedores({
             name="miembros"
             value={v.id}
             defaultChecked={marcados.includes(v.id)}
-            className="h-5 w-5 accent-primary"
+            className="size-4"
           />
           <span>
             <span className="block font-medium">{cap(v.usuario)}</span>
@@ -79,16 +77,13 @@ export async function Grupos() {
               autoComplete="off"
               className={campo}
             />
-            <input
+            <Archivo
               name="foto"
-              type="file"
               accept="image/jpeg,image/png,image/webp"
-              className={archivo}
+              texto="Foto del dúo"
             />
           </div>
-          <Boton className="bg-primary text-on-primary hover:bg-primary-hover">
-            Crear grupo
-          </Boton>
+          <Boton className="btn-primario">Crear grupo</Boton>
         </Form>
       </Panel>
 
@@ -103,7 +98,7 @@ export async function Grupos() {
               className="overflow-hidden rounded-xl border border-border bg-surface"
             >
               <div
-                className="relative flex h-40 items-end bg-surface-2 bg-cover bg-center p-4"
+                className={`relative flex items-end bg-surface-2 bg-cover bg-center p-4 ${g.foto ? "h-40" : "h-24"}`}
                 style={
                   g.foto
                     ? { backgroundImage: `url(/api/grupos/${g.foto})` }
@@ -129,8 +124,14 @@ export async function Grupos() {
                 </div>
               </div>
               <details className="group p-4">
-                <summary className="cursor-pointer list-none text-sm font-medium text-primary">
+                <summary className="flex w-fit items-center gap-1 text-sm font-medium text-primary">
                   Editar
+                  <span
+                    aria-hidden
+                    className="transition-transform group-open:rotate-90"
+                  >
+                    ›
+                  </span>
                 </summary>
                 <Form
                   action={guardarGrupo}
@@ -156,23 +157,21 @@ export async function Grupos() {
                         className={campo}
                       />
                     </label>
-                    <label className="block">
+                    <div>
                       <span className="mb-1 block text-sm text-muted">
                         Foto del fondo (JPG, PNG o WEBP · hasta 3 MB)
                       </span>
-                      <input
+                      <Archivo
                         name="foto"
-                        type="file"
                         accept="image/jpeg,image/png,image/webp"
-                        className={archivo}
                       />
-                    </label>
+                    </div>
                     {g.foto && (
                       <label className="flex items-center gap-2 text-sm">
                         <input
                           type="checkbox"
                           name="quitar_foto"
-                          className="h-4 w-4 accent-primary"
+                          className="size-4"
                         />
                         Quitar la foto actual
                       </label>
@@ -182,9 +181,7 @@ export async function Grupos() {
                       marcados={miembros.map((m) => m.id)}
                     />
                   </div>
-                  <Boton className="bg-primary text-on-primary hover:bg-primary-hover">
-                    Guardar
-                  </Boton>
+                  <Boton className="btn-primario">Guardar</Boton>
                 </Form>
               </details>
             </article>

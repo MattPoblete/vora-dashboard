@@ -1,8 +1,7 @@
 import { Boton, Form } from "../central/form";
 import { cambiarPassword } from "./actions";
 
-const campo =
-  "h-12 w-full rounded-xl border border-border bg-surface-2 px-4 text-text outline-none placeholder:text-muted/70 focus:border-primary";
+const campo = "campo";
 
 // Used by /cuenta, both for the regular change and for the forced change of a temporary password.
 export function FormularioPassword({
@@ -55,7 +54,7 @@ export function FormularioPassword({
           required
           className={campo}
         />
-        <Boton className="h-12 w-full bg-primary text-lg text-on-primary hover:bg-primary-hover">
+        <Boton className="btn-primario h-12! w-full text-base!">
           Guardar contraseña
         </Boton>
       </Form>

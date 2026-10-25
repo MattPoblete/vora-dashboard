@@ -27,10 +27,7 @@ export default function Error({
             )}
             .
           </p>
-          <button
-            onClick={() => retry()}
-            className="h-12 w-full rounded-2xl bg-primary text-lg font-semibold text-on-primary hover:bg-primary-hover"
-          >
+          <button onClick={() => retry()} className="btn btn-primario w-full">
             Reintentar
           </button>
         </Panel>

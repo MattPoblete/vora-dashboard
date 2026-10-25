@@ -12,8 +12,7 @@ import { agregarVenta, type Estado } from "./actions";
 type Sug = { nombre: string; telefono: string | null; compras: number };
 const TALLAS = ["XS", "S", "M", "L", "XL", "XXL"];
 const PRECIOS = [5000, 8000, 10000, 15000, 20000];
-const input =
-  "w-full rounded-2xl border border-border bg-surface-2 px-5 text-text placeholder:text-muted/70 outline-none backdrop-blur-xl focus:border-primary focus:ring-4 focus:ring-primary/25";
+const input = "campo px-4!";
 
 export function VentaForm({
   live,
@@ -65,9 +64,7 @@ export function VentaForm({
       <input type="hidden" name="live" value={live} />
 
       <div>
-        <label className="mb-2 block text-sm uppercase tracking-wider text-muted">
-          Nick / @
-        </label>
+        <label className="mb-2 block text-sm font-medium">Nick / @</label>
         <input
           ref={nickRef}
           name="nick"
@@ -78,7 +75,7 @@ export function VentaForm({
           autoComplete="off"
           autoCapitalize="none"
           placeholder="@usuario"
-          className={`${input} h-20 text-3xl`}
+          className={`${input} h-14! text-2xl`}
         />
         <datalist id="sugs">
           {visibles.map((s) => (
@@ -102,16 +99,14 @@ export function VentaForm({
       </div>
 
       <div>
-        <label className="mb-2 block text-sm uppercase tracking-wider text-muted">
-          Precio
-        </label>
+        <label className="mb-2 block text-sm font-medium">Precio</label>
         <input
           name="precio"
           value={precio}
           onChange={(e) => setPrecio(e.target.value.replace(/\D/g, ""))}
           inputMode="numeric"
           placeholder="10000"
-          className={`${input} h-20 text-3xl tabular-nums`}
+          className={`${input} h-14! text-2xl tabular-nums`}
         />
         <div className="mt-2 flex flex-wrap gap-2">
           {PRECIOS.map((p) => (
@@ -120,7 +115,7 @@ export function VentaForm({
               type="button"
               tabIndex={-1}
               onClick={() => setPrecio(String(p))}
-              className="rounded-full border border-border bg-surface-2 px-4 py-2 text-sm hover:bg-border"
+              className="btn btn-secundario btn-chico tabular-nums"
             >
               ${p.toLocaleString("es-CL")}
             </button>
@@ -129,9 +124,7 @@ export function VentaForm({
       </div>
 
       <div>
-        <span className="mb-2 block text-sm uppercase tracking-wider text-muted">
-          Talla
-        </span>
+        <span className="mb-2 block text-sm font-medium">Talla</span>
         <div className="flex flex-wrap gap-3">
           {TALLAS.map((t) => (
             <label key={t}>
@@ -142,7 +135,7 @@ export function VentaForm({
                 required
                 className="peer sr-only"
               />
-              <span className="flex h-16 min-w-20 cursor-pointer items-center justify-center rounded-2xl border border-border bg-surface-2 px-5 text-2xl backdrop-blur-xl peer-checked:border-primary peer-checked:bg-primary-soft peer-focus-visible:ring-4 peer-focus-visible:ring-primary/25">
+              <span className="flex h-12 min-w-14 cursor-pointer items-center justify-center rounded-lg border border-border bg-surface px-4 text-lg font-medium peer-checked:border-primary peer-checked:bg-primary-soft peer-focus-visible:ring-4 peer-focus-visible:ring-primary/25">
                 {t}
               </span>
             </label>
@@ -151,15 +144,13 @@ export function VentaForm({
       </div>
 
       <div>
-        <label className="mb-2 block text-sm uppercase tracking-wider text-muted">
-          Material
-        </label>
+        <label className="mb-2 block text-sm font-medium">Material</label>
         <input
           name="material"
           list="materiales"
           autoComplete="off"
           placeholder="softshell, cortavientos…"
-          className={`${input} h-20 text-3xl`}
+          className={`${input} h-14! text-2xl`}
         />
         <datalist id="materiales">
           {materiales.map((m) => (
@@ -169,9 +160,7 @@ export function VentaForm({
       </div>
 
       <div>
-        <label className="mb-2 block text-sm uppercase tracking-wider text-muted">
-          Código
-        </label>
+        <label className="mb-2 block text-sm font-medium">Código</label>
         <input
           name="codigo"
           inputMode="numeric"
@@ -179,7 +168,7 @@ export function VentaForm({
           maxLength={4}
           required
           placeholder="123"
-          className={`${input} h-20 text-4xl tabular-nums`}
+          className={`${input} h-14! text-2xl font-semibold tabular-nums`}
         />
       </div>
 
@@ -189,7 +178,7 @@ export function VentaForm({
             type="checkbox"
             checked={conDetalle}
             onChange={(e) => setConDetalle(e.target.checked)}
-            className="h-6 w-6 accent-primary"
+            className="size-5"
           />
           Prenda con detalles
         </label>
@@ -199,14 +188,14 @@ export function VentaForm({
             autoFocus
             rows={2}
             placeholder="Observaciones: mancha, descosido, falta botón…"
-            className={`${input} mt-3 py-4 text-xl`}
+            className={`${input} mt-3 h-12! text-lg`}
           />
         )}
       </div>
 
       <button
         disabled={pending}
-        className="h-20 w-full rounded-2xl bg-primary text-on-primary hover:bg-primary-hover text-2xl font-semibold shadow-lg shadow-primary/20 transition active:scale-[0.99] disabled:opacity-60"
+        className="btn btn-primario h-14! w-full text-lg! font-semibold"
       >
         {pending ? "Agregando…" : "Agregar"}
       </button>

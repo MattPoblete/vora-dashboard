@@ -14,8 +14,7 @@ export type Venta = {
   respaldo: number;
 };
 
-const field =
-  "h-12 w-full rounded-xl border border-border bg-surface-2 px-3 text-lg text-text outline-none focus:border-primary";
+const field = "campo h-12! text-lg";
 
 function Editar({ v, onDone }: { v: Venta; onDone: () => void }) {
   const [state, action, pending] = useActionState<Estado, FormData>(
@@ -83,7 +82,7 @@ function Editar({ v, onDone }: { v: Venta; onDone: () => void }) {
         <button
           type="button"
           onClick={onDone}
-          className="h-11 rounded-xl border border-border bg-surface-2 px-4"
+          className="btn btn-secundario h-11!"
         >
           Cancelar
         </button>
@@ -141,7 +140,7 @@ function Fila({ v }: { v: Venta }) {
             setEditando(true);
           }}
           aria-label={`Editar #${v.codigo}`}
-          className="h-10 w-10 rounded-xl border border-border bg-surface-2 hover:bg-border"
+          className="btn btn-secundario w-10 px-0!"
         >
           ✎
         </button>

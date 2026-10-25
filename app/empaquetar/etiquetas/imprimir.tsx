@@ -13,7 +13,7 @@ export function Imprimir() {
       onClick={() => window.print()}
       className="rounded-lg bg-black px-4 py-2 font-medium text-white print:hidden"
     >
-      🖨 Imprimir
+      Imprimir
     </button>
   );
 }

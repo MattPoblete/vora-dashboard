@@ -3,8 +3,7 @@
 import { useActionState } from "react";
 import { login, type LoginEstado } from "./actions";
 
-const campo =
-  "h-14 w-full rounded-2xl border border-border bg-surface-2 px-5 text-lg text-text outline-none placeholder:text-muted/70 focus:border-primary focus:ring-4 focus:ring-primary/25";
+const campo = "campo";
 
 export function LoginForm() {
   const [state, action, pending] = useActionState<LoginEstado, FormData>(
@@ -13,31 +12,33 @@ export function LoginForm() {
   );
   return (
     <form action={action} className="space-y-4">
-      <input
-        name="usuario"
-        placeholder="Usuario"
-        autoComplete="username"
-        autoCapitalize="none"
-        autoFocus
-        required
-        className={campo}
-      />
-      <input
-        name="clave"
-        type="password"
-        placeholder="Contraseña"
-        autoComplete="current-password"
-        required
-        className={campo}
-      />
-      <button
-        disabled={pending}
-        className="h-14 w-full rounded-2xl bg-primary text-on-primary hover:bg-primary-hover text-lg font-semibold disabled:opacity-60"
-      >
+      <label className="block">
+        <span className="mb-1.5 block text-sm font-medium">Usuario</span>
+        <input
+          name="usuario"
+          autoComplete="username"
+          autoCapitalize="none"
+          autoFocus
+          required
+          className={campo}
+        />
+      </label>
+      <label className="block">
+        <span className="mb-1.5 block text-sm font-medium">Contraseña</span>
+        <input
+          name="clave"
+          type="password"
+          autoComplete="current-password"
+          required
+          className={campo}
+        />
+      </label>
+      <button disabled={pending} className="btn btn-primario h-11! w-full">
         {pending ? "Entrando…" : "Entrar"}
       </button>
       <p
-        className="min-h-6 text-center text-sm text-danger-fg"
+        // empty: out of the layout but still announced when the error appears
+        className="text-center text-sm text-danger-fg empty:sr-only"
         aria-live="polite"
       >
         {state.error}

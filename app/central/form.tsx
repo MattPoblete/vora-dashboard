@@ -67,10 +67,7 @@ export function Boton({
 }) {
   const pending = useContext(Pendiente);
   return (
-    <button
-      disabled={pending || disabled}
-      className={`rounded-xl px-4 py-2 font-medium transition disabled:cursor-not-allowed disabled:opacity-40 ${className}`}
-    >
+    <button disabled={pending || disabled} className={`btn ${className}`}>
       {pending ? "…" : children}
     </button>
   );

@@ -1,9 +1,9 @@
-import { Suspense } from "react";
 import Link from "next/link";
 import { connection } from "next/server";
 import { db, dbq, esAdmin, requirePermiso } from "@/lib/session";
 import { gruposParaLive, nombreGrupo, type Grupo } from "@/lib/grupos";
 import { Panel } from "@/components/panel";
+import { Pagina } from "@/components/pagina";
 import { iniciarLive } from "./actions";
 import { VentaForm } from "./form";
 import { Lista, type Venta } from "./lista";
@@ -41,12 +41,8 @@ function Iniciar({ grupos }: { grupos: Grupo[] }) {
       </Panel>
     );
   return (
-    <Panel title="Iniciar live · ¿quién transmite?">
-      {/* accordion gallery: the hovered/focused pair grows; on phones they simply stack */}
-      <form
-        action={iniciarLive}
-        className="flex flex-col gap-3 sm:h-64 sm:flex-row"
-      >
+    <Panel title="¿Quién transmite?">
+      <form action={iniciarLive} className="grid gap-3 sm:grid-cols-3">
         {grupos.map((g) => (
           <button
             key={g.vendedores}
@@ -57,17 +53,17 @@ function Iniciar({ grupos }: { grupos: Grupo[] }) {
                 ? { backgroundImage: `url(/api/grupos/${g.foto})` }
                 : undefined
             }
-            className={`group relative flex min-h-24 flex-1 flex-col items-start justify-end gap-1 overflow-hidden rounded-2xl border border-border bg-surface-2 bg-cover bg-center p-4 backdrop-blur-xl transition-[flex-grow,background-color,border-color] duration-500 hover:border-primary focus-visible:border-primary sm:hover:flex-[3] sm:focus-visible:flex-[3] ${g.foto ? "text-white" : "hover:bg-primary-soft focus-visible:bg-primary-soft"}`}
+            className={`relative flex flex-col items-start justify-end gap-0.5 overflow-hidden rounded-xl border border-border bg-surface-2 bg-cover bg-center p-4 text-left transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-primary ${g.foto ? "h-40 text-white" : "h-24 hover:bg-primary-soft"}`}
           >
             {/* the scrim keeps the name readable over any photo */}
             {g.foto && (
-              <span className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+              <span className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
             )}
-            <span className="relative text-left text-xl font-semibold transition-all duration-500 group-hover:text-3xl group-focus-visible:text-3xl">
+            <span className="relative text-lg font-semibold">
               {nombreGrupo(g)}
             </span>
             <span
-              className={`relative hidden whitespace-nowrap text-sm opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100 sm:block ${g.foto ? "text-white/90" : "text-primary"}`}
+              className={`relative text-sm ${g.foto ? "text-white/85" : "text-primary"}`}
             >
               Iniciar live →
             </span>
@@ -137,7 +133,6 @@ async function Vender({
         }
         ultimas={
           <Panel title="Últimas ventas">
-            {/* the scroll lives inside: the glass layer is absolutely positioned and would not follow a scrolling card */}
             <div className="max-h-[calc(100vh-14rem)] overflow-y-auto pr-1">
               {ultimas.length === 0 ? (
                 <p className="text-muted">Aún no hay ventas en este live.</p>
@@ -160,21 +155,26 @@ function Tabs({
   actual: number | null;
 }) {
   if (!activos.length) return null;
-  const tab = "rounded-full border px-4 py-1.5 text-sm backdrop-blur-xl";
+  const tab =
+    "flex h-8 items-center gap-2 whitespace-nowrap rounded-lg px-3 text-sm font-medium";
   return (
-    <nav className="mb-5 flex flex-wrap gap-2">
+    <nav className="mb-5 flex w-fit max-w-full gap-1 overflow-x-auto rounded-xl bg-surface-2 p-1">
       {activos.map((l) => (
         <Link
           key={l.id}
           href={`/vender?live=${l.id}`}
-          className={`${tab} ${l.id === actual ? "border-primary bg-primary-soft" : "border-border bg-surface-2 hover:bg-border"}`}
+          aria-current={l.id === actual ? "page" : undefined}
+          className={`${tab} ${l.id === actual ? "bg-surface text-text shadow-sm" : "text-muted hover:text-text"}`}
         >
-          ● {titulo(l)}
+          {/* on air */}
+          <span aria-hidden className="size-2 rounded-full bg-danger" />
+          {titulo(l)}
         </Link>
       ))}
       <Link
         href="/vender?nuevo=1"
-        className={`${tab} border-border bg-surface-2 hover:bg-border`}
+        aria-current={actual === null ? "page" : undefined}
+        className={`${tab} ${actual === null ? "bg-surface text-text shadow-sm" : "text-muted hover:text-text"}`}
       >
         + Nuevo live
       </Link>
@@ -184,21 +184,12 @@ function Tabs({
 
 export default function Page(props: PageProps<"/vender">) {
   return (
-    <main className="relative min-h-screen overflow-hidden px-4 pb-32 pt-8 text-text sm:px-8">
-      <div className="relative mx-auto max-w-6xl">
-        <header className="mb-6 flex items-center justify-between">
-          <h1 className="text-3xl font-semibold">Agregar venta</h1>
-        </header>
-        <Suspense
-          fallback={<p className="text-center text-muted">Cargando…</p>}
-        >
-          <Vender
-            params={
-              props.searchParams as Promise<{ live?: string; nuevo?: string }>
-            }
-          />
-        </Suspense>
-      </div>
-    </main>
+    <Pagina titulo="Agregar venta">
+      <Vender
+        params={
+          props.searchParams as Promise<{ live?: string; nuevo?: string }>
+        }
+      />
+    </Pagina>
   );
 }

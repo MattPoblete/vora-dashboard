@@ -8,7 +8,8 @@ export type ItemBento = {
   href?: string;
 };
 
-const caja = "flex flex-col rounded-xl border border-border bg-surface p-5 shadow-sm";
+const caja =
+  "flex flex-col rounded-xl border border-border bg-surface p-5 shadow-sm";
 
 // 2 columns on a phone (the KPIs pair up), 4 on a wide screen; wide cards take 2. Heights follow the content.
 export function Bento({ items }: { items: ItemBento[] }) {

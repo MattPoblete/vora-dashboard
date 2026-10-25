@@ -75,12 +75,102 @@
   --color-danger-fg: color-mix(in oklab, var(--danger) 62%, var(--text));
   --color-info-fg: color-mix(in oklab, var(--info) 62%, var(--text));
   --color-starken-fg: color-mix(in oklab, var(--starken) 62%, var(--text));
-  --font-sans:
-    Arial, Helvetica, sans-serif; /* what the app always rendered: no webfont to download */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
   color: var(--text);
   background: var(--bg);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01"; /* Inter: straight-sided 1 and single-storey a read better in tables */
+}
+
+/* native controls in the brand color (checkboxes, radios, range) */
+:root {
+  accent-color: var(--primary);
+}
+
+/* <details> rows draw their own chevron */
+summary {
+  list-style: none;
+  cursor: pointer;
+}
+summary::-webkit-details-marker {
+  display: none;
+}
+
+/* the three button looks; size and radius are shared so every button lines up */
+@layer components {
+  .btn {
+    display: inline-flex;
+    height: 2.5rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.5rem;
+    padding-inline: 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+    transition:
+      background-color 150ms,
+      border-color 150ms,
+      color 150ms;
+  }
+  .btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  .btn:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+  .btn-primario {
+    background: var(--primary);
+    color: var(--on-primary);
+  }
+  .btn-primario:hover:not(:disabled) {
+    background: var(--primary-hover);
+  }
+  .btn-secundario {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+  }
+  .btn-secundario:hover:not(:disabled) {
+    background: var(--surface-2);
+  }
+  .btn-exito {
+    background: var(--success);
+    color: #fff;
+  }
+  .btn-exito:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--success) 88%, black);
+  }
+  /* text inputs and selects */
+  .campo {
+    height: 2.75rem;
+    width: 100%;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding-inline: 0.875rem;
+    color: var(--text);
+    outline: none;
+    transition:
+      border-color 150ms,
+      box-shadow 150ms;
+  }
+  .campo::placeholder {
+    color: color-mix(in srgb, var(--text-muted) 75%, transparent);
+  }
+  .campo:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent);
+  }
+  .btn-chico {
+    height: 2rem;
+    padding-inline: 0.75rem;
+    font-size: 0.75rem;
+  }
 }

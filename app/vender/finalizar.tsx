@@ -22,7 +22,7 @@ export function Finalizar({ id }: { id: number }) {
         }
         onBlur={() => setConfirmar(false)}
         disabled={pending}
-        className={`rounded-full border px-5 py-1.5 text-sm font-medium backdrop-blur-xl ${confirmar ? "border-danger bg-danger/40" : "border-border bg-surface-2 hover:bg-border"}`}
+        className={`btn btn-chico border ${confirmar ? "border-danger bg-danger/10 text-danger-fg" : "btn-secundario"}`}
       >
         {pending
           ? "Finalizando…"

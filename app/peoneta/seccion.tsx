@@ -1,4 +1,5 @@
 import { Panel } from "@/components/panel";
+import { nombrePropio } from "@/lib/formato";
 import type { PaqueteD } from "@/lib/despacho";
 import { Boton, Form } from "../central/form";
 import { marcarEnviado } from "./actions";
@@ -21,9 +22,11 @@ export function Seccion({
         <fieldset>
           <legend className="sr-only">{titulo}</legend>
           <div className="mb-4 flex items-center justify-between gap-3">
-            <h2 className="text-2xl font-semibold">
-              {titulo}{" "}
-              <span className={`ml-2 rounded-full px-3 py-1 text-base ${tono}`}>
+            <h2 className="flex items-center gap-2.5 text-xl font-semibold">
+              {titulo}
+              <span
+                className={`rounded-full px-2.5 py-0.5 text-sm font-medium tabular-nums ${tono}`}
+              >
                 {paquetes.length}
               </span>
             </h2>
@@ -37,29 +40,38 @@ export function Seccion({
                     type="checkbox"
                     name="paquete"
                     value={p.id}
-                    className="h-9 w-9 shrink-0 accent-success"
+                    className="size-6 shrink-0 rounded accent-success"
                   />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-xl font-semibold">
-                      {p.cliente}
+                    <span className="block truncate text-lg font-semibold">
+                      @{p.cliente}
                     </span>
                     <span className="block truncate text-sm text-muted">
-                      {[p.nombre_completo, p.ciudad]
+                      {[
+                        p.nombre_completo && nombrePropio(p.nombre_completo),
+                        p.ciudad,
+                      ]
                         .filter(Boolean)
                         .join(" · ") || "—"}
                     </span>
-                    <span className="block text-sm text-primary">
-                      {p.codigos.map((c) => "#" + c).join("  ")}
+                    <span className="block text-sm text-text/80">
+                      Prendas{" "}
+                      <span className="font-medium tabular-nums text-primary">
+                        {p.codigos.map((c) => "#" + c).join("  ")}
+                      </span>
                     </span>
                   </span>
-                  <span className="text-sm tabular-nums text-muted">
-                    #{p.id}
+                  <span className="shrink-0 text-right text-xs text-muted">
+                    Paquete
+                    <span className="block text-sm font-medium tabular-nums text-text">
+                      #{p.id}
+                    </span>
                   </span>
                 </label>
               </li>
             ))}
           </ul>
-          <Boton className="mt-4 h-16 w-full bg-success text-on-primary hover:brightness-110 text-lg">
+          <Boton className="btn-exito mt-4 h-14! w-full text-base!">
             {accion}
           </Boton>
         </fieldset>

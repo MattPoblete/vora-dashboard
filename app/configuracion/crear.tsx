@@ -6,8 +6,7 @@ import { Panel } from "@/components/panel";
 import { crearUsuario, type CrearEstado } from "./actions";
 import { copiarTexto } from "@/lib/portapapeles";
 
-const campo =
-  "h-11 w-full rounded-xl border border-border bg-surface-2 px-3 text-text outline-none placeholder:text-muted/70 focus:border-primary";
+const campo = "campo";
 const caja =
   "flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-surface-2/50 p-3 has-[:checked]:border-primary has-[:checked]:bg-primary-soft";
 
@@ -26,8 +25,11 @@ export function CrearUsuario() {
 
   return (
     <details className="mb-6 group">
-      <summary className="inline-block cursor-pointer list-none rounded-full bg-primary text-on-primary hover:bg-primary-hover px-5 py-2 font-medium">
-        + Nuevo usuario
+      <summary className="btn btn-primario w-fit">
+        <span aria-hidden className="text-lg leading-none">
+          +
+        </span>
+        Nuevo usuario
       </summary>
       <div className="mt-4 max-w-2xl">
         <Panel title="Nuevo usuario">
@@ -55,7 +57,7 @@ export function CrearUsuario() {
                     type="checkbox"
                     name="permisos"
                     value={p.id}
-                    className="mt-1 h-5 w-5 accent-primary"
+                    className="mt-0.5 size-4"
                   />
                   <span>
                     <span className="block font-medium">{p.label}</span>
@@ -70,7 +72,7 @@ export function CrearUsuario() {
                   type="checkbox"
                   name="permisos"
                   value="admin"
-                  className="mt-1 h-5 w-5 accent-primary"
+                  className="mt-0.5 size-4"
                 />
                 <span>
                   <span className="block font-medium">Administrador</span>

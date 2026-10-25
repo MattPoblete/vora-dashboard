@@ -7,7 +7,6 @@ import {
 } from "@/lib/central";
 import { Panel } from "@/components/panel";
 import { Tiempo } from "@/components/tiempo";
-import { Step } from "@/components/Stepper";
 import {
   mensajeConfirmacion,
   mensajeTransferencia,
@@ -15,7 +14,9 @@ import {
 } from "@/lib/mensajes";
 import { Generador, Mensaje } from "./copiar";
 import { Boton, Form } from "./form";
-import { PasosCentral } from "./pasos";
+import { PasosCentral, Step } from "./pasos";
+import { Archivo } from "@/components/archivo";
+import { nombrePropio } from "@/lib/formato";
 import {
   contactado,
   guardarEnvio,
@@ -26,10 +27,9 @@ import {
 } from "./actions";
 
 const clp = (n: number) => "$" + Number(n).toLocaleString("es-CL");
-const campo =
-  "h-11 w-full rounded-xl border border-border bg-surface-2 px-3 text-text outline-none placeholder:text-muted/70 focus:border-primary";
+const campo = "campo";
 const sec = "mt-5 border-t border-border pt-4";
-const h3 = "mb-3 text-xs font-medium uppercase tracking-wider text-muted";
+const h3 = "mb-3 text-sm font-semibold";
 
 export function estadoTarjeta(t: Tarjeta) {
   if (t.pagos.length === 0) {
@@ -86,10 +86,12 @@ export function Card({ t }: { t: Tarjeta }) {
     >
       <header className="flex flex-wrap items-start justify-between gap-3 pr-10">
         <div>
-          <h2 className="text-2xl font-semibold">{t.cliente.nombre}</h2>
+          <h2 className="text-2xl font-semibold">@{t.cliente.nombre}</h2>
           <p className="text-sm text-muted">
-            {t.cliente.nombre_completo ?? "sin nombre completo"} ·{" "}
-            {t.cliente.telefono ? "+" + t.cliente.telefono : "sin teléfono"}
+            {t.cliente.nombre_completo
+              ? nombrePropio(t.cliente.nombre_completo)
+              : "sin nombre completo"}{" "}
+            · {t.cliente.telefono ? "+" + t.cliente.telefono : "sin teléfono"}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -129,8 +131,8 @@ export function Card({ t }: { t: Tarjeta }) {
                     v.estado === "esperando_pago") && (
                     <Form action={liberarVenta}>
                       <input type="hidden" name="venta" value={v.id} />
-                      <Boton className="border border-border bg-surface-2 px-3 py-1 text-xs hover:bg-danger/30">
-                        Liberar
+                      <Boton className="btn-secundario btn-chico">
+                        Liberar prenda
                       </Boton>
                     </Form>
                   )}
@@ -145,7 +147,7 @@ export function Card({ t }: { t: Tarjeta }) {
             {t.ventas.some((v) => v.estado === "reservada") && (
               <Form action={contactado} className="mt-4">
                 <input type="hidden" name="cliente" value={cid} />
-                <Boton className="w-full border border-info/50 bg-info/20 hover:bg-info/30">
+                <Boton className="btn-primario w-full">
                   Cliente contactó · enviar datos de transferencia
                 </Boton>
               </Form>
@@ -164,7 +166,7 @@ export function Card({ t }: { t: Tarjeta }) {
               {t.pagos.map((p) => (
                 <div
                   key={p.id}
-                  className="mb-2 flex flex-wrap items-center gap-3 rounded-xl bg-surface-2/50 p-3"
+                  className="mb-2 flex flex-wrap items-center gap-3 rounded-lg bg-surface-2 p-3"
                 >
                   {p.comprobante && (
                     <a
@@ -185,13 +187,11 @@ export function Card({ t }: { t: Tarjeta }) {
                     <span className="ml-auto flex gap-2">
                       <Form action={validarPago}>
                         <input type="hidden" name="pago" value={p.id} />
-                        <Boton className="bg-success text-on-primary py-1 hover:bg-success text-on-primary">
-                          Validar
-                        </Boton>
+                        <Boton className="btn-exito btn-chico">Validar</Boton>
                       </Form>
                       <Form action={quitarPago}>
                         <input type="hidden" name="pago" value={p.id} />
-                        <Boton className="border border-border bg-surface-2 py-1">
+                        <Boton className="btn-secundario btn-chico">
                           Quitar
                         </Boton>
                       </Form>
@@ -213,16 +213,13 @@ export function Card({ t }: { t: Tarjeta }) {
                     className={`${campo} w-32`}
                     aria-label="Monto transferido"
                   />
-                  <input
-                    type="file"
+                  <Archivo
                     name="archivo"
                     accept="image/jpeg,image/png,image/webp,application/pdf"
                     required
-                    className="min-w-0 flex-1 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-surface-2 file:px-3 file:py-2 file:text-text"
+                    texto="Elegir comprobante"
                   />
-                  <Boton className="bg-primary text-on-primary hover:bg-primary-hover">
-                    Subir
-                  </Boton>
+                  <Boton className="btn-primario">Subir</Boton>
                 </Form>
               )}
             </section>
@@ -251,7 +248,7 @@ export function Card({ t }: { t: Tarjeta }) {
                         required
                         className="peer sr-only"
                       />
-                      <span className="inline-block cursor-pointer rounded-xl border border-border bg-surface-2 px-4 py-2 peer-checked:border-primary peer-checked:bg-primary-soft">
+                      <span className="inline-flex h-10 cursor-pointer items-center rounded-lg border border-border bg-surface px-4 text-sm font-medium peer-checked:border-primary peer-checked:bg-primary-soft peer-focus-visible:outline-2 peer-focus-visible:outline-primary">
                         {c.label}
                       </span>
                     </label>
@@ -298,9 +295,7 @@ export function Card({ t }: { t: Tarjeta }) {
                     />
                   </label>
                 </div>
-                <Boton className="border border-border bg-surface-2 hover:bg-border">
-                  Guardar datos de envío
-                </Boton>
+                <Boton className="btn-secundario">Guardar datos de envío</Boton>
               </Form>
             </section>
           </Step>
@@ -311,7 +306,7 @@ export function Card({ t }: { t: Tarjeta }) {
                 {t.faltantes.map((f) => (
                   <li
                     key={f}
-                    className="flex items-center gap-2 rounded-xl bg-warning/10 px-4 py-2 text-warning-fg"
+                    className="flex items-center gap-2 rounded-lg bg-warning/10 px-4 py-2 text-warning-fg"
                   >
                     <span>⚠</span>
                     {f}
@@ -319,7 +314,7 @@ export function Card({ t }: { t: Tarjeta }) {
                 ))}
               </ul>
             ) : (
-              <p className="rounded-xl bg-success/10 px-4 py-3 text-success-fg">
+              <p className="rounded-lg bg-success/10 px-4 py-3 text-success-fg">
                 ✓ Pago validado y datos de envío completos. Ya puedes pasar el
                 pedido a empaquetar.
               </p>

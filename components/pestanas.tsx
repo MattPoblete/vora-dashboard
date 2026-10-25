@@ -20,7 +20,7 @@ export function Pestanas({
     <div
       role="tablist"
       aria-label={label}
-      className="mb-6 flex w-fit max-w-full gap-1 overflow-x-auto rounded-xl bg-surface-2 p-1"
+      className="mb-6 flex w-fit max-w-full gap-1 overflow-x-auto rounded-xl bg-surface-2 p-1 max-sm:pr-8 max-sm:[mask-image:linear-gradient(to_right,black_calc(100%-2rem),transparent)]"
     >
       {tabs.map((t) => {
         const activo = t.id === actual;

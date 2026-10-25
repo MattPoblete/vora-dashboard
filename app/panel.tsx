@@ -1,8 +1,13 @@
 import type { ReactNode } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  ArrowRight01Icon,
   ChartLineData01Icon,
+  LiveStreaming02Icon,
+  ReceiptDollarIcon,
+  Tag01Icon,
+  TaskDone01Icon,
+  UserMultiple02Icon,
+  UserStar01Icon,
   Clock01Icon,
   DeliveryTruck01Icon,
   Money01Icon,
@@ -12,6 +17,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import type { ItemBento } from "@/components/bento";
 import { COURIERS } from "@/lib/central";
+import { duracion, num } from "@/lib/formato";
 import type { Dia, Fila } from "@/lib/estadisticas";
 
 const ICONOS = {
@@ -22,26 +28,25 @@ const ICONOS = {
   monto: Money01Icon,
   reloj: Clock01Icon,
   serie: ChartLineData01Icon,
-  ir: ArrowRight01Icon,
+  live: LiveStreaming02Icon,
+  ticket: ReceiptDollarIcon,
+  material: Tag01Icon,
+  estados: TaskDone01Icon,
+  parejas: UserMultiple02Icon,
+  clientes: UserStar01Icon,
 };
 type Icono = keyof typeof ICONOS;
 
-export const clp = (n: number) => "$" + Number(n).toLocaleString("es-CL");
-export const num = (n: number) => Number(n).toLocaleString("es-CL");
+export { clp, num } from "@/lib/formato";
 export const courier = (id: string) =>
   COURIERS.find((c) => c.id === id)?.label ?? id.replaceAll("_", " ");
 
-// "2 h 15 min" / "35 min" / "3 d"; "—" when nothing is waiting
+// how long the oldest one has waited; "—" when nothing is waiting
 export function hace(desde: Date | null) {
   if (!desde) return "—";
-  const min = Math.max(0, Math.round((Date.now() - desde.getTime()) / 60000));
-  if (min < 60) return `${min} min`;
-  if (min < 60 * 24)
-    return `${Math.floor(min / 60)} h ${String(min % 60).padStart(2, " ")} min`.replace(
-      "  ",
-      " ",
-    );
-  return `${Math.floor(min / 1440)} d`;
+  return duracion(
+    Math.max(0, Math.round((Date.now() - desde.getTime()) / 60000)),
+  );
 }
 
 function Tarjeta({
@@ -126,7 +131,12 @@ export function lista(
   icono: Icono,
   label: string,
   filas: Fila[],
-  opts: { nombre?: (k: string) => string; vacio?: string } = {},
+  opts: {
+    nombre?: (k: string) => string;
+    color?: (k: string) => string; // bar class per row (semantic states); brand color otherwise
+    vacio?: string;
+    arroba?: boolean;
+  } = {},
 ): ItemBento {
   const max = Math.max(...filas.map((f) => f.v), 1);
   return {
@@ -143,14 +153,17 @@ export function lista(
             {filas.map((f) => (
               <li key={f.k}>
                 <div className="flex justify-between text-sm">
-                  <span className="truncate first-letter:uppercase">
+                  <span
+                    className={`truncate ${opts.arroba ? "" : "first-letter:uppercase"}`}
+                  >
+                    {opts.arroba ? "@" : ""}
                     {opts.nombre ? opts.nombre(f.k) : f.k}
                   </span>
                   <span className="tabular-nums text-muted">{num(f.v)}</span>
                 </div>
                 <div className="mt-1 h-1.5 rounded-full bg-surface-2">
                   <div
-                    className="h-1.5 rounded-full bg-primary"
+                    className={`h-1.5 rounded-full ${opts.color?.(f.k) ?? "bg-primary"}`}
                     style={{ width: `${(f.v / max) * 100}%` }}
                   />
                 </div>
@@ -163,16 +176,7 @@ export function lista(
   };
 }
 
-// a card that is a link to the work screen
+// the screen this tab summarizes: shown as the button in the header, not as a card
 export function ir(href: string, label: string): ItemBento {
-  return {
-    id: href,
-    href,
-    content: (
-      <div className="flex flex-1 items-center justify-between gap-3 font-semibold text-primary">
-        {label}
-        <HugeiconsIcon icon={ICONOS.ir} size={20} strokeWidth={2} />
-      </div>
-    ),
-  };
+  return { id: href, href, content: label };
 }

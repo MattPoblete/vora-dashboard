@@ -1,6 +1,6 @@
-import { Suspense } from "react";
 import { connection } from "next/server";
 import { Panel } from "@/components/panel";
+import { Pagina } from "@/components/pagina";
 import { Pestanas } from "@/components/pestanas";
 import { transferencia } from "@/lib/mensajes";
 import { PANTALLAS, esPermiso, type Permiso } from "@/lib/permisos";
@@ -53,14 +53,14 @@ async function Usuarios({ yoId }: { yoId: number }) {
               <li key={u.id}>
                 {/* native <details>: no JS, keyboard accessible, and `name` makes the group exclusive */}
                 <details name="usuario" className="group">
-                  <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-3 gap-y-2 py-4 [&::-webkit-details-marker]:hidden">
+                  <summary className="-mx-2 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg px-2 py-3.5 hover:bg-surface-2">
                     <span
                       aria-hidden
-                      className="text-muted transition-transform group-open:rotate-90"
+                      className="w-3 text-lg leading-none text-muted transition-transform group-open:rotate-90"
                     >
-                      ▶
+                      ›
                     </span>
-                    <span className="min-w-28 text-lg font-semibold">
+                    <span className="min-w-28 font-semibold">
                       {u.usuario}
                       {soyYo && (
                         <span className="ml-2 text-sm font-normal text-muted">
@@ -116,7 +116,7 @@ async function Usuarios({ yoId }: { yoId: number }) {
                                 name="permisos"
                                 value={p.id}
                                 defaultChecked={propios.includes(p.id)}
-                                className="mt-1 h-5 w-5 accent-primary"
+                                className="mt-0.5 size-4"
                               />
                               <span>
                                 <span className="block font-medium">
@@ -134,7 +134,7 @@ async function Usuarios({ yoId }: { yoId: number }) {
                               name="permisos"
                               value="admin"
                               defaultChecked={propios.includes("admin")}
-                              className="mt-1 h-5 w-5 accent-primary"
+                              className="mt-0.5 size-4"
                             />
                             <span>
                               <span className="block font-medium">
@@ -152,7 +152,7 @@ async function Usuarios({ yoId }: { yoId: number }) {
                             type="checkbox"
                             name="activo"
                             defaultChecked={u.activo}
-                            className="h-5 w-5 accent-success"
+                            className="size-4"
                           />
                           <span>Usuario activo (puede iniciar sesión)</span>
                         </label>
@@ -163,9 +163,7 @@ async function Usuarios({ yoId }: { yoId: number }) {
                           Tu propio acceso no se edita desde aquí.
                         </p>
                       ) : (
-                        <Boton className="bg-primary text-on-primary hover:bg-primary-hover">
-                          Guardar cambios
-                        </Boton>
+                        <Boton className="btn-primario">Guardar cambios</Boton>
                       )}
                     </Form>
                     {soyYo ? (
@@ -201,9 +199,8 @@ function Transferencia() {
     <div className="max-w-2xl">
       <Panel title="Datos de transferencia">
         <p className="mb-4 text-sm text-muted">
-          Es lo que central envía a los clientes en el mensaje de transferencia.
-          Se lee del archivo <code>.env</code>: para cambiarlo, edita las
-          variables y reinicia el servidor.
+          Es lo que Central envía a los clientes en el mensaje de transferencia.
+          Para cambiar estos datos, contacta al administrador técnico.
         </p>
         <dl className="divide-y divide-border">
           {filas.map(([nombre, valor, variable]) => {
@@ -258,24 +255,13 @@ async function Contenido({
 
 export default function Page(props: PageProps<"/configuracion">) {
   return (
-    <main className="relative min-h-screen overflow-hidden px-4 pb-32 pt-8 text-text sm:px-8">
-      <div className="relative mx-auto max-w-4xl">
-        <header className="mb-6 flex items-center justify-between gap-3">
-          <div>
-            <h1 className="text-3xl font-semibold">Configuración</h1>
-            <p className="text-muted">
-              Usuarios, grupos de venta, transferencia y registro de cambios
-            </p>
-          </div>
-        </header>
-        <Suspense
-          fallback={<p className="text-center text-muted">Cargando…</p>}
-        >
-          <Contenido
-            params={props.searchParams as Promise<{ tab?: string; t?: string }>}
-          />
-        </Suspense>
-      </div>
-    </main>
+    <Pagina
+      titulo="Configuración"
+      subtitulo="Usuarios, grupos de venta, transferencia y registro de cambios"
+    >
+      <Contenido
+        params={props.searchParams as Promise<{ tab?: string; t?: string }>}
+      />
+    </Pagina>
   );
 }

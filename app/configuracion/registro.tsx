@@ -94,28 +94,32 @@ export async function Registro({ tabla }: { tabla: string }) {
 
   return (
     <div className="space-y-4">
-      <nav className="flex flex-wrap gap-2">
-        {TABLAS.map((t) => (
-          <Link
-            key={t.id}
-            href={`/configuracion?tab=registro${t.id ? `&t=${t.id}` : ""}`}
-            className={`rounded-full border px-4 py-1.5 text-sm ${
-              t.id === filtro
-                ? "border-primary bg-primary text-on-primary"
-                : "border-border bg-surface-2 hover:bg-border"
-            }`}
-          >
-            {t.label}
-          </Link>
-        ))}
-      </nav>
+      {/* filters only make sense once something was logged */}
+      {(filas.length > 0 || filtro) && (
+        <nav className="flex w-fit max-w-full gap-1 overflow-x-auto rounded-xl bg-surface-2 p-1">
+          {TABLAS.map((t) => (
+            <Link
+              key={t.id}
+              href={`/configuracion?tab=registro${t.id ? `&t=${t.id}` : ""}`}
+              aria-current={t.id === filtro ? "page" : undefined}
+              className={`flex h-8 items-center whitespace-nowrap rounded-lg px-3 text-sm font-medium ${
+                t.id === filtro
+                  ? "bg-surface text-text shadow-sm"
+                  : "text-muted hover:text-text"
+              }`}
+            >
+              {t.label}
+            </Link>
+          ))}
+        </nav>
+      )}
       <Panel title={`Últimos movimientos · ${filas.length}`}>
         {filas.length === 0 ? (
           <p className="text-muted">Aún no hay movimientos registrados.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[40rem] text-left text-sm">
-              <thead className="text-xs uppercase tracking-wider text-muted">
+              <thead className="border-b border-border text-xs text-muted">
                 <tr>
                   <th className="py-2 pr-4 font-medium">Fecha</th>
                   <th className="py-2 pr-4 font-medium">Usuario</th>

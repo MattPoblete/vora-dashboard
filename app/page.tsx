@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import Link from "next/link";
 import { connection } from "next/server";
 import type { Sql } from "postgres";
 import { db, esAdmin, requirePermiso, type Sesion } from "@/lib/session";
@@ -11,7 +11,9 @@ import {
   estadVentas,
 } from "@/lib/estadisticas";
 import { Pestanas } from "@/components/pestanas";
+import { Encabezado, Pagina } from "@/components/pagina";
 import { Bento, type ItemBento } from "@/components/bento";
+import { BARRA, prendas, tonoEstado } from "@/lib/formato";
 import { clp, courier, hace, ir, kpi, lista, num, serie } from "./panel";
 import { Auditoria, type ParamsAuditoria } from "./auditoria";
 
@@ -27,6 +29,7 @@ const ESTADOS: Record<string, string> = {
   no_se_encuentra: "No se encuentra",
   empaquetada: "Empaquetadas",
 };
+const colorEstado = (k: string) => BARRA[tonoEstado(k)];
 const estado = (k: string) => ESTADOS[k] ?? k.replaceAll("_", " ");
 const suma = (d: { n: number }[]) => num(d.reduce((a, x) => a + x.n, 0));
 
@@ -37,13 +40,13 @@ const PANELES: Record<Pantalla, (q: Sql) => Promise<ItemBento[]>> = {
     return [
       kpi("ventas", "Ventas de hoy", num(hoy.n), clp(hoy.monto)),
       kpi(
-        "monto",
+        "live",
         "Live en curso",
         live ? num(live.n) : "—",
         live ? `${live.vendedores} · ${clp(live.monto)}` : "Sin live activo",
       ),
       serie("Ventas por día", semana, suma(semana)),
-      lista("ventas", "Materiales más vendidos (30 días)", materiales),
+      lista("material", "Materiales más vendidos (30 días)", materiales),
       ir("/vender", "Agregar venta"),
     ];
   },
@@ -58,7 +61,10 @@ const PANELES: Record<Pantalla, (q: Sql) => Promise<ItemBento[]>> = {
         clp(pagos.monto as number),
       ),
       serie("Pedidos enviados a empaque", semana, suma(semana)),
-      lista("central", "Ventas en tu cola", estados, { nombre: estado }),
+      lista("central", "Ventas en tu cola", estados, {
+        nombre: estado,
+        color: colorEstado,
+      }),
       ir("/central", "Ir a Central"),
     ];
   },
@@ -69,7 +75,7 @@ const PANELES: Record<Pantalla, (q: Sql) => Promise<ItemBento[]>> = {
         "empaquetado",
         "Pedidos por empaquetar",
         num(cola.pedidos),
-        `${num(cola.prendas)} prenda(s)`,
+        prendas(cola.prendas),
       ),
       kpi("reloj", "Espera más antigua", hace(desde), "pedido más viejo"),
       serie("Paquetes empaquetados", semana, suma(semana)),
@@ -106,19 +112,31 @@ async function cargarAdmin(q: Sql): Promise<ItemBento[]> {
     kpi("ventas", "Ventas", num(t.ventas)),
     kpi("monto", "Monto vendido", clp(Number(t.monto))),
     kpi(
-      "ventas",
-      "Lives activos",
-      num(lives.activos),
-      `de ${num(lives.total)}`,
+      "ticket",
+      "Ticket promedio",
+      t.ventas ? clp(Math.round(Number(t.monto) / t.ventas)) : "—",
+      "por prenda vendida",
     ),
+    kpi("live", "Lives activos", num(lives.activos), `de ${num(lives.total)}`),
     serie("Ventas por día", semana, suma(semana)),
-    lista("ventas", "Ventas por estado", estados, { nombre: estado }),
-    lista("ventas", "Parejas (30 días)", parejas),
-    lista("ventas", "Mejores clientes", clientes),
+    lista("estados", "Ventas por estado", estados, {
+      nombre: estado,
+      color: colorEstado,
+    }),
+    lista("parejas", "Parejas (30 días)", parejas),
+    lista("clientes", "Mejores clientes", clientes, { arroba: true }),
   ];
 }
 
 type Tab = "resumen" | "auditoria" | Pantalla;
+const SUBTITULO: Record<Tab, string> = {
+  resumen: "Totales de todos los lives",
+  auditoria: "Historial de cada pedido y de quién lo tocó",
+  ventas: "Lo vendido hoy y en la semana",
+  central: "Cobros y pagos pendientes",
+  empaquetado: "Lo que espera ser empaquetado",
+  despacho: "Paquetes esperando al courier",
+};
 type Params = { tab?: string } & ParamsAuditoria;
 
 // one tab per role the user holds; the admin also gets the general summary and the order audit first (and can look at
@@ -145,8 +163,20 @@ async function Paneles({ params }: { params: Promise<Params> }) {
     id === "auditoria"
       ? []
       : await db((q) => (id === "resumen" ? cargarAdmin(q) : PANELES[id](q)));
+  const accion = items.find((i) => i.href);
   return (
     <>
+      <Encabezado
+        titulo="Vora Boutique"
+        subtitulo={SUBTITULO[id]}
+        accion={
+          accion?.href && (
+            <Link href={accion.href} className="btn btn-primario">
+              {accion.content}
+            </Link>
+          )
+        }
+      />
       {tabs.length > 1 && (
         <Pestanas
           label="Resumen"
@@ -161,7 +191,7 @@ async function Paneles({ params }: { params: Promise<Params> }) {
         {actual.id === "auditoria" ? (
           <Auditoria p={p} />
         ) : (
-          <Bento items={items} />
+          <Bento items={items.filter((i) => !i.href)} />
         )}
       </div>
     </>
@@ -170,20 +200,8 @@ async function Paneles({ params }: { params: Promise<Params> }) {
 
 export default function Home(props: PageProps<"/">) {
   return (
-    <main className="relative min-h-screen overflow-hidden px-4 pb-32 pt-10 text-text sm:px-8">
-      <div className="relative mx-auto max-w-6xl">
-        <header className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-semibold">Vora Boutique</h1>
-            <p className="text-muted">Tu resumen del día</p>
-          </div>
-        </header>
-        <Suspense
-          fallback={<p className="text-center text-muted">Cargando…</p>}
-        >
-          <Paneles params={props.searchParams as Promise<Params>} />
-        </Suspense>
-      </div>
-    </main>
+    <Pagina>
+      <Paneles params={props.searchParams as Promise<Params>} />
+    </Pagina>
   );
 }

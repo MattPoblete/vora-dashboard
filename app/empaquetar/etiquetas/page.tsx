@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { connection } from "next/server";
 import { db, requirePermiso } from "@/lib/session";
 import { cargarEmpaque, lineasEtiqueta, nombreCourier } from "@/lib/empaque";
+import { prendas } from "@/lib/formato";
 import { Imprimir } from "./imprimir";
 
 // 10 x 15 cm thermal label, one per page
@@ -18,9 +19,14 @@ async function Etiquetas({ ids }: { ids: Promise<{ ids?: string }> }) {
   const paquetes = lista.length ? await db((q) => cargarEmpaque(q, lista)) : [];
   if (!paquetes.length)
     return (
-      <p className="p-8">
-        No hay etiquetas para imprimir (¿ya fueron empaquetadas?).
-      </p>
+      <div className="grid min-h-screen place-items-center p-8 text-center">
+        <div>
+          <p className="font-medium">No hay etiquetas para imprimir.</p>
+          <p className="mt-1 text-sm text-neutral-500">
+            Puede que esos pedidos ya se hayan empaquetado.
+          </p>
+        </div>
+      </div>
     );
 
   return (
@@ -63,7 +69,7 @@ async function Etiquetas({ ids }: { ids: Promise<{ ids?: string }> }) {
             </div>
             <footer className="border-t-2 border-black pt-[3mm]">
               <p className="text-[3.5mm]">
-                <b>{p.prendas.length}</b> prenda(s):{" "}
+                <b>{prendas(p.prendas.length)}</b>:{" "}
                 {p.prendas.map((x) => "#" + x.codigo).join(" ")}
               </p>
               <p className="mt-[1mm] text-[3mm] text-neutral-600">
