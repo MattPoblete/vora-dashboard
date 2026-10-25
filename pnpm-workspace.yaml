@@ -1,0 +1,8 @@
+allowBuilds:
+  # its postinstall only re-checks the native binding, which pnpm already installs as an optional dependency
+  unrs-resolver: false
+
+peerDependencyRules:
+  allowedVersions:
+    # eslint-config-next's plugins (import, jsx-a11y, react) still declare eslint <=9; their rules were checked to work on 10
+    eslint: "10"
