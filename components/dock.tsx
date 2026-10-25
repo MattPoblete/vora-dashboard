@@ -27,9 +27,10 @@ const ICONOS = {
 
 export type ItemDock = { id: keyof typeof ICONOS; href: string; label: string };
 
-// icon over its label; each button is as wide as its label, so six fit a 390px phone
+// phone/tablet: icon over its label, as wide as the label (six fit a 390px phone);
+// desktop (lg): icon beside the label, like any top bar link
 const boton =
-  "flex h-12 min-w-12 flex-col items-center justify-center gap-0.5 rounded-xl px-1.5 text-[11px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-primary sm:min-w-16 sm:px-2";
+  "flex h-12 min-w-12 flex-col items-center justify-center gap-0.5 rounded-xl px-1.5 text-[11px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-primary sm:min-w-16 sm:px-2 lg:h-9 lg:min-w-0 lg:flex-row lg:gap-2 lg:rounded-lg lg:px-3 lg:text-sm";
 // colors live in the two states (never both in one string, otherwise hover:bg-* and bg-* would compete)
 const reposo = "text-muted hover:bg-surface-2 hover:text-text";
 const actual_ = "bg-primary-soft text-primary";
@@ -41,7 +42,8 @@ function Enlace({ item, activo }: { item: ItemDock; activo: boolean }) {
     <Link
       href={item.href}
       aria-current={activo ? "page" : undefined}
-      className={`${boton} ${activo ? actual_ : reposo}`}
+      // the summary sits mid-dock under the thumb, but leads the top bar
+      className={`${boton} ${activo ? actual_ : reposo} ${item.id === "resumen" ? "lg:order-first" : ""}`}
     >
       <HugeiconsIcon icon={ICONOS[item.id]} size={20} strokeWidth={1.8} />
       {item.label}
@@ -49,7 +51,7 @@ function Enlace({ item, activo }: { item: ItemDock; activo: boolean }) {
   );
 }
 
-// ---------- account menu: opens above the user button ----------
+// ---------- account menu: opens above the button (bottom dock) or below it (top bar) ----------
 export type UsuarioDock = { nombre: string; avatar: string | null };
 
 function MenuUsuario({
@@ -136,7 +138,7 @@ function MenuUsuario({
       {abierto && (
         <ul
           role="menu"
-          className="absolute bottom-full right-0 z-10 mb-3 w-64 rounded-xl border border-border bg-surface p-1.5 shadow-lg"
+          className="absolute bottom-full right-0 z-10 mb-3 w-64 rounded-xl border border-border bg-surface p-1.5 shadow-lg lg:bottom-auto lg:top-full lg:mb-0 lg:mt-2"
         >
           {items.map((it) => (
             <li key={it.id} role="none">
@@ -168,7 +170,8 @@ function MenuUsuario({
   );
 }
 
-// Floating dock at the bottom (sections, summary in the middle) with the account button at its end.
+// Phone/tablet: floating dock at the bottom (sections, summary in the middle, account at the end).
+// Desktop (lg): the same links as a full-width top bar with the brand on the left and the account on the right.
 export function Dock({
   principal,
   usuario,
@@ -186,18 +189,30 @@ export function Dock({
   // "sin acceso": no section links to bounce off, only the account menu (profile, log out)
   const secciones = actual.startsWith("/sin-acceso") ? [] : principal;
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex justify-center px-2">
+    <div className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex justify-center px-2 lg:bottom-auto lg:top-0 lg:px-0">
       <nav
         aria-label="Navegación"
-        className="pointer-events-auto flex max-w-full items-center gap-0.5 rounded-2xl border border-border bg-surface p-1 shadow-lg sm:gap-1"
+        className="pointer-events-auto max-w-full rounded-2xl border border-border bg-surface p-1 shadow-lg lg:w-full lg:rounded-none lg:border-x-0 lg:border-t-0 lg:px-8 lg:py-2 lg:shadow-none"
       >
-        {secciones.map((it) => (
-          <Enlace key={it.id} item={it} activo={esActivo(it, actual)} />
-        ))}
-        {secciones.length > 0 && (
-          <span aria-hidden className="mx-0.5 h-8 w-px shrink-0 bg-border" />
-        )}
-        <MenuUsuario usuario={usuario} admin={admin} salir={salir} />
+        <div className="flex items-center gap-0.5 sm:gap-1 lg:mx-auto lg:max-w-6xl">
+          <Link
+            href="/"
+            className="mr-4 hidden font-semibold tracking-tight lg:order-first lg:block"
+          >
+            Vora Boutique
+          </Link>
+          {secciones.map((it) => (
+            <Enlace key={it.id} item={it} activo={esActivo(it, actual)} />
+          ))}
+          {secciones.length > 0 && (
+            <span
+              aria-hidden
+              className="mx-0.5 h-8 w-px shrink-0 bg-border lg:hidden"
+            />
+          )}
+          <span aria-hidden className="hidden flex-1 lg:block" />
+          <MenuUsuario usuario={usuario} admin={admin} salir={salir} />
+        </div>
       </nav>
     </div>
   );

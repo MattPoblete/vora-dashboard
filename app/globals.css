@@ -88,8 +88,14 @@ body {
 /* native controls in the brand color (checkboxes, radios, range) */
 :root {
   accent-color: var(--primary);
-  /* the fixed dock (~74px with its offset) never hides what keyboard focus or #anchors scroll to */
+  /* the fixed navigation never hides what keyboard focus or #anchors scroll to: bottom dock (~74px) below lg, top bar from lg */
   scroll-padding-bottom: 6rem;
+}
+@media (min-width: 64rem) {
+  :root {
+    scroll-padding-bottom: 0;
+    scroll-padding-top: 5rem;
+  }
 }
 
 /* <details> rows draw their own chevron */

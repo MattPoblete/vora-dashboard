@@ -147,12 +147,13 @@ async function Paneles({ params }: { params: Promise<Params> }) {
   const tabs: { id: Tab; label: string }[] = [
     ...(esAdmin(s)
       ? [
-          { id: "resumen" as const, label: "Resumen" },
+          { id: "resumen" as const, label: "General" },
           { id: "auditoria" as const, label: "Auditoría" },
         ]
       : []),
     ...PANTALLAS.filter((p) => esAdmin(s) || s.permisos.includes(p.id)).map(
-      (p) => ({ id: p.id, label: p.label }),
+      // "Cifras de …": these tabs are numbers about each area, not the area's work screen (that is in the nav)
+      (p) => ({ id: p.id, label: `Cifras de ${p.label.toLowerCase()}` }),
     ),
   ];
   const p = await params;
@@ -167,7 +168,7 @@ async function Paneles({ params }: { params: Promise<Params> }) {
   return (
     <>
       <Encabezado
-        titulo="Vora Boutique"
+        titulo="Inicio"
         subtitulo={SUBTITULO[id]}
         accion={
           accion?.href && (

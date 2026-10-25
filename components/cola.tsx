@@ -109,7 +109,7 @@ export function Cola({
               onClick={() => abrir(it.anchor)}
               className="flex w-full flex-wrap items-center gap-x-4 gap-y-1 rounded-lg px-2 py-3 text-left hover:bg-surface-2 focus-visible:bg-surface-2"
             >
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 basis-full sm:basis-0">
                 <p className="truncate font-semibold">{it.titulo}</p>
                 <p className="truncate text-sm text-muted">
                   {[it.subtitulo, ...it.lineas].join(" · ")}
