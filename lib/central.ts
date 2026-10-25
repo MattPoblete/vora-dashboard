@@ -7,6 +7,10 @@ export const COURIERS: { id: Courier; label: string }[] = [
   { id: "retiro_tienda", label: "Retiro en tienda" },
 ];
 
+// 56911112222 -> +56 9 1111 2222; anything else as is
+export const fono = (x: string) =>
+  /^56\d{9}$/.test(x) ? `+56 ${x[2]} ${x.slice(3, 7)} ${x.slice(7)}` : x;
+
 export type Campo =
   | "nombre_completo"
   | "rut"

@@ -1,5 +1,5 @@
 import type postgres from "postgres";
-import { COURIERS, type Courier } from "./central";
+import { COURIERS, fono, type Courier } from "./central";
 
 export type PrendaE = {
   id: number;
@@ -29,11 +29,7 @@ export const nombreCourier = (c: Courier) =>
 // exactly the fields each courier's label asks for
 export function lineasEtiqueta(p: Paquete): [string, string][] {
   const v = (x: string | null) => x?.trim() || "(falta)";
-  // 56911112222 -> +56 9 1111 2222
-  const tel = (x: string | null) =>
-    x && /^56\d{9}$/.test(x)
-      ? `+56 ${x[2]} ${x.slice(3, 7)} ${x.slice(7)}`
-      : v(x);
+  const tel = (x: string | null) => v(x && fono(x));
   if (p.courier === "starken")
     return [
       ["Nombre", v(p.nombre_completo)],

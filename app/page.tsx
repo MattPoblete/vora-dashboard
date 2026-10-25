@@ -15,6 +15,7 @@ import { Nav } from "@/components/nav";
 import { Bento } from "@/components/bento";
 import type { MagicBentoItem } from "@/components/MagicBento";
 import { clp, courier, hace, ir, kpi, lista, num, serie } from "./panel";
+import { Auditoria, type ParamsAuditoria } from "./auditoria";
 
 const ESTADOS: Record<string, string> = {
   reservada: "Reservadas",
@@ -119,24 +120,33 @@ async function cargarAdmin(q: Sql): Promise<MagicBentoItem[]> {
   ];
 }
 
-type Tab = "resumen" | Pantalla;
+type Tab = "resumen" | "auditoria" | Pantalla;
+type Params = { tab?: string } & ParamsAuditoria;
 
-// one tab per role the user holds; the admin also gets the general summary first (and can look at every role)
-async function Paneles({ params }: { params: Promise<{ tab?: string }> }) {
+// one tab per role the user holds; the admin also gets the general summary and the order audit first (and can look at
+// every role)
+async function Paneles({ params }: { params: Promise<Params> }) {
   await connection(); // always query at request time
   const s: Sesion = await requirePermiso(...PANTALLAS.map((p) => p.id)); // any role; admin passes
   const tabs: { id: Tab; label: string }[] = [
-    ...(esAdmin(s) ? [{ id: "resumen" as const, label: "Resumen" }] : []),
+    ...(esAdmin(s)
+      ? [
+          { id: "resumen" as const, label: "Resumen" },
+          { id: "auditoria" as const, label: "Auditoría" },
+        ]
+      : []),
     ...PANTALLAS.filter((p) => esAdmin(s) || s.permisos.includes(p.id)).map(
       (p) => ({ id: p.id, label: p.label }),
     ),
   ];
-  const { tab: pedida } = await params;
-  const actual = tabs.find((t) => t.id === pedida) ?? tabs[0];
+  const p = await params;
+  const actual = tabs.find((t) => t.id === p.tab) ?? tabs[0];
   // only the open tab is queried
-  const items = await db((q) =>
-    actual.id === "resumen" ? cargarAdmin(q) : PANELES[actual.id](q),
-  );
+  const id = actual.id; // a const, so the narrowing below reaches the callback
+  const items =
+    id === "auditoria"
+      ? []
+      : await db((q) => (id === "resumen" ? cargarAdmin(q) : PANELES[id](q)));
   return (
     <>
       {tabs.length > 1 && (
@@ -163,8 +173,12 @@ async function Paneles({ params }: { params: Promise<{ tab?: string }> }) {
         </div>
       )}
       <div role="tabpanel">
-        {/* key: switching tabs remounts the grid, so the intro animation plays for the new cards */}
-        <Bento key={actual.id} items={items} />
+        {actual.id === "auditoria" ? (
+          <Auditoria p={p} />
+        ) : (
+          // key: switching tabs remounts the grid, so the intro animation plays for the new cards
+          <Bento key={actual.id} items={items} />
+        )}
       </div>
     </>
   );
@@ -184,7 +198,7 @@ export default function Home(props: PageProps<"/">) {
         <Suspense
           fallback={<p className="text-center text-muted">Cargando…</p>}
         >
-          <Paneles params={props.searchParams as Promise<{ tab?: string }>} />
+          <Paneles params={props.searchParams as Promise<Params>} />
         </Suspense>
       </div>
     </main>
