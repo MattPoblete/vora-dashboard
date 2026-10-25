@@ -4,7 +4,11 @@ import type { NextRequest } from "next/server";
 // optimistic check only (cookie present). The real checks are the session lookup + postgres RLS.
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  if (pathname === "/login" || req.cookies.has("vora_session"))
+  if (
+    pathname === "/login" ||
+    pathname === "/api/health" ||
+    req.cookies.has("vora_session")
+  )
     return NextResponse.next();
   if (pathname.startsWith("/api/"))
     return new NextResponse("No autenticado", { status: 401 });
