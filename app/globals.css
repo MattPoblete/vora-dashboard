@@ -88,6 +88,8 @@ body {
 /* native controls in the brand color (checkboxes, radios, range) */
 :root {
   accent-color: var(--primary);
+  /* the fixed dock (~74px with its offset) never hides what keyboard focus or #anchors scroll to */
+  scroll-padding-bottom: 6rem;
 }
 
 /* <details> rows draw their own chevron */

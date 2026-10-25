@@ -27,9 +27,9 @@ const ICONOS = {
 
 export type ItemDock = { id: keyof typeof ICONOS; href: string; label: string };
 
-// icon over its label; narrow enough on a phone for five sections plus the account button in 390px
+// icon over its label; each button is as wide as its label, so six fit a 390px phone
 const boton =
-  "flex h-12 w-14 flex-col items-center justify-center gap-0.5 rounded-xl text-[11px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-primary sm:w-16";
+  "flex h-12 min-w-12 flex-col items-center justify-center gap-0.5 rounded-xl px-1.5 text-[11px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-primary sm:min-w-16 sm:px-2";
 // colors live in the two states (never both in one string, otherwise hover:bg-* and bg-* would compete)
 const reposo = "text-muted hover:bg-surface-2 hover:text-text";
 const actual_ = "bg-primary-soft text-primary";
@@ -183,16 +183,20 @@ export function Dock({
   const actual = usePathname();
   // the print view of the labels is a sheet, not an app screen
   if (actual.startsWith("/empaquetar/etiquetas")) return null;
+  // "sin acceso": no section links to bounce off, only the account menu (profile, log out)
+  const secciones = actual.startsWith("/sin-acceso") ? [] : principal;
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex justify-center px-2">
       <nav
         aria-label="Navegación"
         className="pointer-events-auto flex max-w-full items-center gap-0.5 rounded-2xl border border-border bg-surface p-1 shadow-lg sm:gap-1"
       >
-        {principal.map((it) => (
+        {secciones.map((it) => (
           <Enlace key={it.id} item={it} activo={esActivo(it, actual)} />
         ))}
-        <span aria-hidden className="mx-0.5 h-8 w-px shrink-0 bg-border" />
+        {secciones.length > 0 && (
+          <span aria-hidden className="mx-0.5 h-8 w-px shrink-0 bg-border" />
+        )}
         <MenuUsuario usuario={usuario} admin={admin} salir={salir} />
       </nav>
     </div>

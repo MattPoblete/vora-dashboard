@@ -25,7 +25,7 @@ export function Mensaje({ texto }: { texto: string }) {
             if (await copiarTexto(ref.current?.value ?? texto)) setOk(true);
             setTimeout(() => setOk(false), 2000);
           }}
-          className="rounded-xl bg-primary text-on-primary hover:bg-primary-hover px-4 py-2 font-medium"
+          className="btn btn-secundario"
         >
           {ok ? "¡Copiado! ✓" : "Copiar mensaje"}
         </button>

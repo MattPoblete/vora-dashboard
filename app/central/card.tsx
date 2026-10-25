@@ -118,7 +118,7 @@ export function Card({ t }: { t: Tarjeta }) {
                   <span className="w-14 text-lg font-semibold tabular-nums text-primary">
                     #{v.codigo}
                   </span>
-                  <span className="flex-1 text-sm text-text/80">
+                  <span className="min-w-40 flex-1 text-sm text-text/80">
                     {[v.talla, v.material, v.live].filter(Boolean).join(" · ")}
                     {v.detalle && (
                       <span className="block text-warning-fg">

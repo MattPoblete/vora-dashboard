@@ -80,7 +80,7 @@ export function kpi(
     id: label,
     content: (
       <Tarjeta icono={icono} label={label}>
-        <p className="mt-3 text-3xl font-semibold tabular-nums leading-none">
+        <p className="mt-3 truncate text-2xl font-semibold tabular-nums leading-none sm:text-3xl">
           {valor}
         </p>
         {nota && <p className="mt-1.5 truncate text-sm text-muted">{nota}</p>}

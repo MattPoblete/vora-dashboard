@@ -263,7 +263,7 @@ export async function Auditoria({ p }: { p: ParamsAuditoria }) {
                           </td>
                         )}
                         <td className="whitespace-nowrap py-2">
-                          <div>{f.ultimo_usuario ?? "—"}</div>
+                          {f.ultimo_usuario && <div>{f.ultimo_usuario}</div>}
                           <div className="text-xs tabular-nums text-muted">
                             {fecha(f.ultimo_en)}
                           </div>

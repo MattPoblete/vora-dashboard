@@ -19,6 +19,7 @@ export function Pagina({
   children: ReactNode;
 }) {
   return (
+    // pb-32: room for the fixed dock (components/dock.tsx), so the last row is never under it
     <main className="min-h-screen px-4 pb-32 pt-8 text-text sm:px-8 sm:pt-10">
       {vivo && <AutoRefresh />}
       <div className="mx-auto max-w-6xl">
