@@ -178,7 +178,9 @@ export function Card({ t }: { t: Tarjeta }) {
                   )}
                   <span className="tabular-nums">{clp(p.monto)}</span>
                   {p.validado ? (
-                    <span className="ml-auto text-success-fg">✓ validado</span>
+                    <span className="ml-auto text-success-fg">
+                      ✓ validado{p.validado_por && ` por ${p.validado_por}`}
+                    </span>
                   ) : (
                     <span className="ml-auto flex gap-2">
                       <Form action={validarPago}>

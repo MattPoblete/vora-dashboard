@@ -7,3 +7,4 @@ psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d vora_dev -f /docker-entrypoint-in
 psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d vora_dev -f /docker-entrypoint-initdb.d/004_grupos_venta.sql
 psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d vora_dev -f /docker-entrypoint-initdb.d/005_perfil.sql
 psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d vora_dev -f /docker-entrypoint-initdb.d/006_registro.sql
+psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d vora_dev -f /docker-entrypoint-initdb.d/007_validado_por.sql

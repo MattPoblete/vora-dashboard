@@ -45,6 +45,7 @@ export type Pago = {
   monto: number;
   comprobante: string | null;
   validado: boolean;
+  validado_por: string | null; // NULL on payments validated before it was recorded
 };
 export type Dir = {
   id: number;
@@ -120,7 +121,7 @@ export async function cargar(
       from direcciones_envio where cliente_id in ${q(ids)} order by cliente_id, id desc`,
   ]);
   const pagos = pedidos.length
-    ? await q`select id, pedido_id, monto, comprobante, validado_en is not null validado
+    ? await q`select id, pedido_id, monto, comprobante, validado_en is not null validado, validado_por
               from pagos where pedido_id in ${q(pedidos.map((p) => p.id))} order by id`
     : [];
 

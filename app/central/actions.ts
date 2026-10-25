@@ -91,7 +91,8 @@ export async function validarPago(_: Estado, f: FormData): Promise<Estado> {
   if (!pid) return { error: "Pago inválido" };
   return db(async (tx) => {
     const [p] =
-      await tx`update pagos set validado_en = now() where id = ${pid} and validado_en is null returning pedido_id`;
+      await tx`update pagos set validado_en = now(), validado_por = current_setting('app.usuario', true)
+               where id = ${pid} and validado_en is null returning pedido_id`;
     if (!p) return { error: "El pago ya estaba validado" };
     await tx`update ventas set estado = 'pagada' where pedido_id = ${p.pedido_id} and estado in ('reservada','esperando_pago')`;
     return done("Pago validado");
