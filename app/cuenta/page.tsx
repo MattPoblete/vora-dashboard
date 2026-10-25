@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { Glass } from "@/components/glass";
-import { Nav } from "@/components/nav";
 import { getPerfil } from "@/lib/perfil";
 import { getSession } from "@/lib/session";
 import { Boton, Form } from "../central/form";
@@ -133,7 +132,6 @@ export default function Page() {
           <Contenido />
         </Suspense>
       </div>
-      <Nav />
     </main>
   );
 }

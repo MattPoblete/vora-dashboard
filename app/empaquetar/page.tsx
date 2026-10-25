@@ -4,7 +4,6 @@ import { connection } from "next/server";
 import { db, requirePermiso } from "@/lib/session";
 import { cargarEmpaque } from "@/lib/empaque";
 import { Glass } from "@/components/glass";
-import { Nav } from "@/components/nav";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { Cola, type ItemCola } from "@/components/cola";
 import { COLOR_COURIER, nombreCourier } from "@/lib/empaque";
@@ -88,7 +87,6 @@ export default function Page(props: PageProps<"/empaquetar">) {
               Pedidos por empaquetar · se actualiza solo
             </p>
           </div>
-          <Nav />
         </header>
         <Suspense
           fallback={<p className="text-center text-muted">Cargando…</p>}

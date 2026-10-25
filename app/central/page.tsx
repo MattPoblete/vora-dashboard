@@ -3,7 +3,6 @@ import { connection } from "next/server";
 import { db, requirePermiso } from "@/lib/session";
 import { cargar } from "@/lib/central";
 import { Glass } from "@/components/glass";
-import { Nav } from "@/components/nav";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { Cola, type ItemCola } from "@/components/cola";
 import { Card, estadoTarjeta } from "./card";
@@ -87,7 +86,6 @@ export default function Page(props: PageProps<"/central">) {
               Ventas por confirmar · se actualiza solo
             </p>
           </div>
-          <Nav />
         </header>
         <Suspense
           fallback={<p className="text-center text-muted">Cargando…</p>}

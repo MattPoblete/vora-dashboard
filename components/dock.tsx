@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   DashboardSquare01Icon,
@@ -60,36 +66,94 @@ const reposo =
   "text-text/80 hover:bg-surface-2 hover:text-text focus-visible:bg-surface-2 focus-visible:text-text";
 const actual_ =
   "bg-primary text-on-primary hover:bg-primary-hover focus-visible:bg-primary-hover";
-function Enlace({
-  item,
-  actual,
-  escritorio,
-}: {
-  item: ItemDock;
-  actual: string;
-  escritorio: boolean;
-}) {
-  const activo =
-    item.href === "/" ? actual === "/" : actual.startsWith(item.href);
+const esActivo = (item: ItemDock, actual: string) =>
+  item.href === "/" ? actual === "/" : actual.startsWith(item.href);
+
+function Enlace({ item, activo }: { item: ItemDock; activo: boolean }) {
   return (
     <Con label={item.label}>
       <Link
         href={item.href}
         aria-label={item.label}
         aria-current={activo ? "page" : undefined}
-        // active: the glass icon is the highlight, so no solid background behind it
+        data-dock=""
+        // active: the sliding glass lens (see Lente) sits on top and is the highlight, so the plain icon hides
         className={`${boton} ${activo ? "" : reposo}`}
       >
-        {activo ? (
-          <IconoActivo icon={ICONOS[item.id]} size={escritorio ? 50 : 40} />
-        ) : (
-          <HugeiconsIcon icon={ICONOS[item.id]} size={23} strokeWidth={1.7} />
-        )}
-        {activo && (
-          <span className="absolute -bottom-1.5 h-1 w-1 rounded-full bg-primary" />
-        )}
+        <HugeiconsIcon
+          icon={ICONOS[item.id]}
+          size={23}
+          strokeWidth={1.7}
+          className={activo ? "opacity-0" : undefined}
+        />
       </Link>
     </Con>
+  );
+}
+
+// The active button's glass icon as ONE lens that slides from the old button to the new one, stretching like a drop
+// on the way and settling with a small bounce. The dock lives in the root layout, so it stays mounted across
+// navigations and the lens remembers where it was. Moved with the `translate` property (not `transform`): the
+// independent `scale` of the drop then stretches the lens in place instead of also scaling its offset.
+function Lente({
+  item,
+  escritorio,
+}: {
+  item: ItemDock | undefined;
+  escritorio: boolean;
+}) {
+  const lente = useRef<HTMLSpanElement>(null);
+  const previa = useRef<{ x: number; y: number } | null>(null);
+  const indice = item?.id;
+  useLayoutEffect(() => {
+    const l = lente.current;
+    if (!l) return;
+    // the nav is the lens' parent (not a ref from the Dock: a parent's ref is attached after its children's
+    // layout effects run, so on mount it would still be null). The tooltip wrapper, unlike the link, never scales
+    // on hover.
+    const destino = l.parentElement?.querySelector<HTMLElement>(
+      "[aria-current=page][data-dock]",
+    )?.parentElement;
+    if (!destino) {
+      l.style.opacity = "0";
+      previa.current = null;
+      return;
+    }
+    const a = { x: destino.offsetLeft, y: destino.offsetTop };
+    const de = previa.current;
+    previa.current = a;
+    l.style.translate = `${a.x}px ${a.y}px`;
+    l.style.opacity = "1";
+    const quieto = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    if (!de || de.x === a.x || quieto) return;
+    l.animate(
+      [
+        { translate: `${de.x}px ${de.y}px`, scale: "1 1" },
+        { scale: "1.25 0.84", offset: 0.35 }, // the drop: wider and flatter mid-flight
+        { scale: "0.96 1.04", offset: 0.75 }, // a little wobble as it lands
+        { translate: `${a.x}px ${a.y}px`, scale: "1 1" },
+      ],
+      { duration: 520, easing: "cubic-bezier(0.34, 1.12, 0.5, 1)" },
+    );
+  }, [indice, escritorio]);
+
+  return (
+    <span
+      ref={lente}
+      aria-hidden
+      className={`pointer-events-none absolute left-0 top-0 z-10 grid ${tam} place-items-center opacity-0`}
+    >
+      {item && (
+        <IconoActivo
+          icon={ICONOS[item.id]}
+          size={escritorio ? 50 : 40}
+          intro={false}
+        />
+      )}
+      <span className="absolute -bottom-1.5 h-1 w-1 rounded-full bg-primary" />
+    </span>
   );
 }
 
@@ -271,16 +335,16 @@ export function Dock({
       >
         <nav
           aria-label="Navegación"
-          className="flex items-center gap-0.5 px-1.5 sm:gap-2 sm:px-3"
+          // relative: the lens is positioned from each button's offsetLeft/Top inside the nav
+          className="relative flex items-center gap-0.5 px-1.5 sm:gap-2 sm:px-3"
         >
           {principal.map((it) => (
-            <Enlace
-              key={it.id}
-              item={it}
-              actual={actual}
-              escritorio={refraccion}
-            />
+            <Enlace key={it.id} item={it} activo={esActivo(it, actual)} />
           ))}
+          <Lente
+            item={principal.find((it) => esActivo(it, actual))}
+            escritorio={refraccion}
+          />
         </nav>
       </GlassSurface>
       <GlassSurface

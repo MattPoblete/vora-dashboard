@@ -5,7 +5,6 @@ import { COURIERS } from "@/lib/central";
 import { cargarDespacho } from "@/lib/despacho";
 import { COLOR_COURIER } from "@/lib/empaque";
 import { Glass } from "@/components/glass";
-import { Nav } from "@/components/nav";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { Seccion } from "./seccion";
 
@@ -60,7 +59,6 @@ export default function Page() {
               Paquetes por enviar · se actualiza solo
             </p>
           </div>
-          <Nav />
         </header>
         <Suspense
           fallback={<p className="text-center text-muted">Cargando…</p>}

@@ -18,7 +18,6 @@ import {
   ShoppingBag01Icon,
   Wallet01Icon,
 } from "@hugeicons/core-free-icons";
-import { Nav } from "@/components/nav";
 import { Pestanas } from "@/components/pestanas";
 import { Bento } from "@/components/bento";
 import type { MagicBentoItem } from "@/components/MagicBento";
@@ -198,7 +197,6 @@ export default function Home(props: PageProps<"/">) {
             <h1 className="text-3xl font-semibold">Vora Boutique</h1>
             <p className="text-muted">Tu resumen del día</p>
           </div>
-          <Nav />
         </header>
         <Suspense
           fallback={<p className="text-center text-muted">Cargando…</p>}

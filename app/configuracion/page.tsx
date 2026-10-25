@@ -7,7 +7,6 @@ import {
   UserGroupIcon,
   UserMultiple02Icon,
 } from "@hugeicons/core-free-icons";
-import { Nav } from "@/components/nav";
 import { Pestanas } from "@/components/pestanas";
 import { transferencia } from "@/lib/mensajes";
 import { PANTALLAS, esPermiso, type Permiso } from "@/lib/permisos";
@@ -274,7 +273,6 @@ export default function Page(props: PageProps<"/configuracion">) {
               Usuarios, grupos de venta, transferencia y registro de cambios
             </p>
           </div>
-          <Nav />
         </header>
         <Suspense
           fallback={<p className="text-center text-muted">Cargando…</p>}

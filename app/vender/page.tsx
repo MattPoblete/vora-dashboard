@@ -4,7 +4,6 @@ import { connection } from "next/server";
 import { db, dbq, esAdmin, requirePermiso } from "@/lib/session";
 import { gruposParaLive, nombreGrupo, type Grupo } from "@/lib/grupos";
 import { Glass } from "@/components/glass";
-import { Nav } from "@/components/nav";
 import { iniciarLive } from "./actions";
 import { VentaForm } from "./form";
 import { Lista, type Venta } from "./lista";
@@ -189,7 +188,6 @@ export default function Page(props: PageProps<"/vender">) {
       <div className="relative mx-auto max-w-6xl">
         <header className="mb-6 flex items-center justify-between">
           <h1 className="text-3xl font-semibold">Agregar venta</h1>
-          <Nav />
         </header>
         <Suspense
           fallback={<p className="text-center text-muted">Cargando…</p>}

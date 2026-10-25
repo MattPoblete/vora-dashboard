@@ -1,5 +1,4 @@
 import { Glass } from "@/components/glass";
-import { Nav } from "@/components/nav";
 
 export default function Page() {
   return (
@@ -11,9 +10,6 @@ export default function Page() {
             administrador que te dé acceso.
           </p>
         </Glass>
-      </div>
-      <div className="relative">
-        <Nav />
       </div>
     </main>
   );

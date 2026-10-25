@@ -10,9 +10,11 @@ import { useOscuro } from "./tema";
 export function IconoActivo({
   icon,
   size,
+  intro = true,
 }: {
   icon: IconSvgElement;
   size: number;
+  intro?: boolean; // false: no entrance animation (the dock lens slides in instead)
 }) {
   const oscuro = useOscuro();
   return (
@@ -27,8 +29,12 @@ export function IconoActivo({
       ]}
       size={size}
       gap={0}
+      tilt={0}
+      plate="offset"
+      parallax={10}
       columns={1}
       labels="none"
+      intro={intro}
       iconColor="#ffffff"
       theme={oscuro ? "dark" : "light"}
       className={size < 40 ? "glass-icons--chico" : ""}
