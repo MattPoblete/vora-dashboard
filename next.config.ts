@@ -2,15 +2,13 @@ import type { NextConfig } from "next";
 
 // ponytail: no nonces, they force dynamic rendering and would turn off partial prerendering; 'unsafe-inline' scripts is
 // the price. Everything is served from our own origin, so 'self' is enough.
-const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const csp = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' blob: data:",
   "font-src 'self'",
-  // the browser Supabase client (lib/supabase/client.ts) talks to the project directly; wss for Realtime
-  `connect-src 'self'${supabase ? ` ${supabase} ${supabase.replace(/^https/, "wss")}` : ""}`,
+  "connect-src 'self'",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

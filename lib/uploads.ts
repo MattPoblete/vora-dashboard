@@ -1,6 +1,5 @@
 import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { supabaseEnv } from "./supabase/env";
 
 // ---------- storage: one private Supabase Storage bucket (db/init/012_storage.sql) ----------
 // The secret key bypasses Storage policies, so this runs on the server only and every read goes through an
@@ -9,9 +8,11 @@ export type Carpeta = "comprobantes" | "grupos" | "avatares";
 const BUCKET = "archivos";
 let cliente: SupabaseClient | undefined;
 function bucket() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const clave = process.env.SUPABASE_SECRET_KEY;
-  if (!clave) throw new Error("Falta SUPABASE_SECRET_KEY");
-  cliente ??= createClient(supabaseEnv().url, clave, {
+  if (!url || !clave)
+    throw new Error("Faltan NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SECRET_KEY");
+  cliente ??= createClient(url, clave, {
     auth: { persistSession: false, autoRefreshToken: false }, // a server key, not a user session
   });
   return cliente.storage.from(BUCKET);
