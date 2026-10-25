@@ -1,69 +1,192 @@
-import Image from "next/image";
+import { Suspense } from "react";
+import Link from "next/link";
+import { connection } from "next/server";
+import type { Sql } from "postgres";
+import { db, esAdmin, requirePermiso, type Sesion } from "@/lib/session";
+import { PANTALLAS, type Pantalla } from "@/lib/permisos";
+import {
+  estadAdmin,
+  estadCentral,
+  estadDespacho,
+  estadEmpaque,
+  estadVentas,
+} from "@/lib/estadisticas";
+import { Nav } from "@/components/nav";
+import { Bento } from "@/components/bento";
+import type { MagicBentoItem } from "@/components/MagicBento";
+import { clp, courier, hace, ir, kpi, lista, num, serie } from "./panel";
 
-export default function Home() {
+const ESTADOS: Record<string, string> = {
+  reservada: "Reservadas",
+  esperando_pago: "Esperando pago",
+  pagada: "Pagadas, por liberar",
+  por_empaquetar: "Por empaquetar",
+  por_enviar: "Por enviar",
+  enviada: "Enviadas",
+  liberada: "Liberadas",
+  no_habla: "No habla",
+  no_se_encuentra: "No se encuentra",
+  empaquetada: "Empaquetadas",
+};
+const estado = (k: string) => ESTADOS[k] ?? k.replaceAll("_", " ");
+const suma = (d: { n: number }[]) => num(d.reduce((a, x) => a + x.n, 0));
+
+// one loader per role: each returns the cards for that part of the operation
+const PANELES: Record<Pantalla, (q: Sql) => Promise<MagicBentoItem[]>> = {
+  async ventas(q) {
+    const { hoy, live, semana, materiales } = await estadVentas(q);
+    return [
+      kpi("ventas", "Ventas de hoy", num(hoy.n), clp(hoy.monto)),
+      kpi(
+        "monto",
+        "Live en curso",
+        live ? num(live.n) : "—",
+        live ? `${live.vendedores} · ${clp(live.monto)}` : "Sin live activo",
+      ),
+      serie("Ventas por día", semana, suma(semana)),
+      lista("ventas", "Materiales más vendidos (30 días)", materiales),
+      ir("/vender", "Agregar venta"),
+    ];
+  },
+  async central(q) {
+    const { estados, porCobrar, pagos, semana } = await estadCentral(q);
+    return [
+      kpi("monto", "Por cobrar", clp(porCobrar), "reservadas y esperando pago"),
+      kpi(
+        "central",
+        "Pagos validados hoy",
+        num(pagos.n),
+        clp(pagos.monto as number),
+      ),
+      serie("Pedidos enviados a empaque", semana, suma(semana)),
+      lista("central", "Ventas en tu cola", estados, { nombre: estado }),
+      ir("/central", "Ir a Central"),
+    ];
+  },
+  async empaquetado(q) {
+    const { cola, couriers, desde, semana } = await estadEmpaque(q);
+    return [
+      kpi(
+        "empaquetado",
+        "Pedidos por empaquetar",
+        num(cola.pedidos),
+        `${num(cola.prendas)} prenda(s)`,
+      ),
+      kpi("reloj", "Espera más antigua", hace(desde), "pedido más viejo"),
+      serie("Paquetes empaquetados", semana, suma(semana)),
+      lista("empaquetado", "Pendientes por courier", couriers, {
+        nombre: courier,
+        vacio: "Nada por empaquetar.",
+      }),
+      ir("/empaquetar", "Ir a Empaquetado"),
+    ];
+  },
+  async despacho(q) {
+    const { couriers, desde, semana } = await estadDespacho(q);
+    return [
+      kpi(
+        "despacho",
+        "Paquetes por despachar",
+        num(couriers.reduce((a, c) => a + c.v, 0)),
+        "esperando al courier",
+      ),
+      kpi("reloj", "Espera más antigua", hace(desde), "paquete más viejo"),
+      serie("Paquetes entregados al courier", semana, suma(semana)),
+      lista("despacho", "Por courier", couriers, {
+        nombre: courier,
+        vacio: "Nada por despachar.",
+      }),
+      ir("/peoneta", "Ir a Despacho"),
+    ];
+  },
+};
+
+async function cargarAdmin(q: Sql): Promise<MagicBentoItem[]> {
+  const { t, lives, estados, parejas, clientes, semana } = await estadAdmin(q);
+  return [
+    kpi("ventas", "Ventas", num(t.ventas)),
+    kpi("monto", "Monto vendido", clp(Number(t.monto))),
+    kpi(
+      "ventas",
+      "Lives activos",
+      num(lives.activos),
+      `de ${num(lives.total)}`,
+    ),
+    serie("Ventas por día", semana, suma(semana)),
+    lista("ventas", "Ventas por estado", estados, { nombre: estado }),
+    lista("ventas", "Parejas (30 días)", parejas),
+    lista("ventas", "Mejores clientes", clientes),
+  ];
+}
+
+type Tab = "resumen" | Pantalla;
+
+// one tab per role the user holds; the admin also gets the general summary first (and can look at every role)
+async function Paneles({ params }: { params: Promise<{ tab?: string }> }) {
+  await connection(); // always query at request time
+  const s: Sesion = await requirePermiso(...PANTALLAS.map((p) => p.id)); // any role; admin passes
+  const tabs: { id: Tab; label: string }[] = [
+    ...(esAdmin(s) ? [{ id: "resumen" as const, label: "Resumen" }] : []),
+    ...PANTALLAS.filter((p) => esAdmin(s) || s.permisos.includes(p.id)).map(
+      (p) => ({ id: p.id, label: p.label }),
+    ),
+  ];
+  const { tab: pedida } = await params;
+  const actual = tabs.find((t) => t.id === pedida) ?? tabs[0];
+  // only the open tab is queried
+  const items = await db((q) =>
+    actual.id === "resumen" ? cargarAdmin(q) : PANELES[actual.id](q),
+  );
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <>
+      {tabs.length > 1 && (
+        <div
+          role="tablist"
+          aria-label="Resumen"
+          className="mb-6 flex w-fit max-w-full gap-1 overflow-x-auto rounded-2xl bg-surface-2 p-1"
+        >
+          {tabs.map((t) => (
+            <Link
+              key={t.id}
+              href={`/?tab=${t.id}`}
+              role="tab"
+              aria-selected={t.id === actual.id}
+              className={`whitespace-nowrap rounded-xl px-4 py-2 text-sm font-medium transition ${
+                t.id === actual.id
+                  ? "bg-primary text-on-primary shadow-sm"
+                  : "text-muted hover:text-text"
+              }`}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              {t.label}
+            </Link>
+          ))}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      )}
+      <div role="tabpanel">
+        {/* key: switching tabs remounts the grid, so the intro animation plays for the new cards */}
+        <Bento key={actual.id} items={items} />
+      </div>
+    </>
+  );
+}
+
+export default function Home(props: PageProps<"/">) {
+  return (
+    <main className="relative min-h-screen overflow-hidden px-4 pb-32 pt-10 text-text sm:px-8">
+      <div className="relative mx-auto max-w-6xl">
+        <header className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-semibold">Vora Boutique</h1>
+            <p className="text-muted">Tu resumen del día</p>
+          </div>
+          <Nav />
+        </header>
+        <Suspense
+          fallback={<p className="text-center text-muted">Cargando…</p>}
+        >
+          <Paneles params={props.searchParams as Promise<{ tab?: string }>} />
+        </Suspense>
+      </div>
+    </main>
   );
 }
