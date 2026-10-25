@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import type { Sql } from "postgres";
 import { db, dbq } from "@/lib/session";
 import { cargar, COURIERS, type Courier } from "@/lib/central";
-import { COMPROBANTES, TIPOS } from "@/lib/uploads";
+import { COMPROBANTES, firmaOk, TIPOS } from "@/lib/uploads";
 import type { Estado } from "../vender/actions";
 
 type Tx = Sql;
@@ -32,6 +32,8 @@ function telefono(v: string | null) {
 
 // one open pedido per client; every pending sale of the client hangs from it
 async function pedidoAbierto(tx: Tx, cid: number) {
+  // two central users on the same client would both create one (pedidos_uno_abierto): serialize them. See vender/actions.ts
+  await tx`select pg_advisory_xact_lock(-1, ${cid}::int)`;
   let [p] =
     await tx`select id from pedidos where cliente_id = ${cid} and cerrado_en is null`;
   if (!p) {
@@ -72,16 +74,18 @@ export async function subirComprobante(
   if (!ext) return { error: "Formato no permitido (JPG, PNG, WEBP o PDF)" };
   if (file.size > MAX) return { error: "El archivo supera 10 MB" };
 
+  const buf = Buffer.from(await file.arrayBuffer());
+  if (!firmaOk(ext, buf))
+    return { error: "El archivo está dañado o no es lo que dice ser" };
+
   return db(async (tx) => {
     const p = await pedidoAbierto(tx, cid);
     const name = `${p}-${Date.now()}.${ext}`;
-    await mkdir(COMPROBANTES, { recursive: true });
-    await writeFile(
-      path.join(COMPROBANTES, name),
-      Buffer.from(await file.arrayBuffer()),
-    );
     await tx`insert into pagos (pedido_id, monto, comprobante) values (${p}, ${monto}, ${name})`;
     await tx`update ventas set estado = 'esperando_pago' where pedido_id = ${p} and estado = 'reservada'`;
+    // last, so a failed insert leaves no orphan file; a failed write rolls the insert back
+    await mkdir(COMPROBANTES, { recursive: true });
+    await writeFile(path.join(COMPROBANTES, name), buf);
     return done("Comprobante subido");
   });
 }

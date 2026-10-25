@@ -71,6 +71,11 @@ function parse(f: FormData) {
 
 type Tx = Sql;
 
+// two sellers typing the same code at once: the second waits here and then sees the first one's sale
+// (no unique index: the Excel import has historic duplicates). Key space (live, codigo); central uses (-1, cliente).
+const codigoLock = (tx: Tx, live: number, codigo: number) =>
+  tx`select pg_advisory_xact_lock(${live}::int, ${codigo}::int)`;
+
 async function clienteId(tx: Tx, nick: string) {
   // ponytail: same nick -> same client (most purchases wins); no unique nick in schema yet
   const [found] = await tx`
@@ -106,6 +111,7 @@ export async function agregarVenta(_: Estado, f: FormData): Promise<Estado> {
   return db(async (tx) => {
     const [l] = await tx`select fin from lives where id = ${live}`;
     if (!l || l.fin) return { error: "El live ya finalizó" };
+    await codigoLock(tx, live, p.codigo);
     const cid = await clienteId(tx, p.nick);
     const [dup] =
       await tx`select id from ventas where live_id = ${live} and codigo = ${p.codigo} and estado <> 'liberada' order by id limit 1`;
@@ -134,6 +140,7 @@ export async function editarVenta(_: Estado, f: FormData): Promise<Estado> {
   return db(async (tx) => {
     const b = await bloqueada(tx, id);
     if ("error" in b) return b;
+    await codigoLock(tx, b.live, p.codigo);
     const [dup] =
       await tx`select 1 from ventas where live_id = ${b.live} and codigo = ${p.codigo} and id <> ${id} and estado <> 'liberada'`;
     if (dup) return { error: `El código ${p.codigo} ya está en este live` };
