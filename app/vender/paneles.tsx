@@ -1,6 +1,11 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import {
+  LeftToRightListBulletIcon,
+  PlusSignIcon,
+} from "@hugeicons/core-free-icons";
+import { IconoActivo } from "@/components/icono-activo";
 
 // On a phone the form and the latest sales used to stack; now they are tabs. On a wide screen (lg) both stay side by
 // side and the tab bar disappears. min-w-0: a grid item otherwise grows to its content and overflows a phone screen. Both panels stay mounted and only the hidden one is `display: none`, so what the
@@ -15,7 +20,11 @@ export function PanelesVenta({
   cantidad: number;
 }) {
   const [tab, setTab] = useState<"form" | "ultimas">("form");
-  const boton = (id: "form" | "ultimas", texto: string) => (
+  const boton = (
+    id: "form" | "ultimas",
+    texto: string,
+    icono: typeof PlusSignIcon,
+  ) => (
     <button
       type="button"
       role="tab"
@@ -23,12 +32,13 @@ export function PanelesVenta({
       aria-selected={tab === id}
       aria-controls={`panel-${id}`}
       onClick={() => setTab(id)}
-      className={`flex-1 rounded-xl px-4 py-3 text-base font-medium transition ${
+      className={`flex h-12 flex-1 items-center justify-center gap-2.5 rounded-xl px-4 text-base font-medium transition ${
         tab === id
           ? "bg-surface text-text shadow-sm"
           : "text-muted hover:text-text"
       }`}
     >
+      {tab === id && <IconoActivo icon={icono} size={28} />}
       {texto}
     </button>
   );
@@ -40,8 +50,12 @@ export function PanelesVenta({
         aria-label="Venta"
         className="mb-4 flex gap-1 rounded-2xl bg-surface-2 p-1 lg:hidden"
       >
-        {boton("form", "Agregar")}
-        {boton("ultimas", `Últimas ventas · ${cantidad}`)}
+        {boton("form", "Agregar", PlusSignIcon)}
+        {boton(
+          "ultimas",
+          `Últimas ventas · ${cantidad}`,
+          LeftToRightListBulletIcon,
+        )}
       </div>
       <div className="grid gap-5 lg:grid-cols-5">
         <div

@@ -17,6 +17,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import AnimatedList from "./AnimatedList";
 import GlassSurface from "./GlassSurface";
+import { IconoActivo } from "./icono-activo";
 import { useEscritorio } from "./tema";
 
 // one icon per destination, so each button reads at a glance
@@ -59,7 +60,15 @@ const reposo =
   "text-text/80 hover:bg-surface-2 hover:text-text focus-visible:bg-surface-2 focus-visible:text-text";
 const actual_ =
   "bg-primary text-on-primary hover:bg-primary-hover focus-visible:bg-primary-hover";
-function Enlace({ item, actual }: { item: ItemDock; actual: string }) {
+function Enlace({
+  item,
+  actual,
+  escritorio,
+}: {
+  item: ItemDock;
+  actual: string;
+  escritorio: boolean;
+}) {
   const activo =
     item.href === "/" ? actual === "/" : actual.startsWith(item.href);
   return (
@@ -68,9 +77,14 @@ function Enlace({ item, actual }: { item: ItemDock; actual: string }) {
         href={item.href}
         aria-label={item.label}
         aria-current={activo ? "page" : undefined}
-        className={`${boton} ${activo ? actual_ : reposo}`}
+        // active: the glass icon is the highlight, so no solid background behind it
+        className={`${boton} ${activo ? "" : reposo}`}
       >
-        <HugeiconsIcon icon={ICONOS[item.id]} size={23} strokeWidth={1.7} />
+        {activo ? (
+          <IconoActivo icon={ICONOS[item.id]} size={escritorio ? 50 : 40} />
+        ) : (
+          <HugeiconsIcon icon={ICONOS[item.id]} size={23} strokeWidth={1.7} />
+        )}
         {activo && (
           <span className="absolute -bottom-1.5 h-1 w-1 rounded-full bg-primary" />
         )}
@@ -260,7 +274,12 @@ export function Dock({
           className="flex items-center gap-0.5 px-1.5 sm:gap-2 sm:px-3"
         >
           {principal.map((it) => (
-            <Enlace key={it.id} item={it} actual={actual} />
+            <Enlace
+              key={it.id}
+              item={it}
+              actual={actual}
+              escritorio={refraccion}
+            />
           ))}
         </nav>
       </GlassSurface>

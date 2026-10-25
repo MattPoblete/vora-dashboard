@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import Link from "next/link";
 import { connection } from "next/server";
 import type { Sql } from "postgres";
 import { db, esAdmin, requirePermiso, type Sesion } from "@/lib/session";
@@ -11,7 +10,16 @@ import {
   estadEmpaque,
   estadVentas,
 } from "@/lib/estadisticas";
+import {
+  DashboardSquare01Icon,
+  DeliveryTruck01Icon,
+  FileSearchIcon,
+  Package01Icon,
+  ShoppingBag01Icon,
+  Wallet01Icon,
+} from "@hugeicons/core-free-icons";
 import { Nav } from "@/components/nav";
+import { Pestanas } from "@/components/pestanas";
 import { Bento } from "@/components/bento";
 import type { MagicBentoItem } from "@/components/MagicBento";
 import { clp, courier, hace, ir, kpi, lista, num, serie } from "./panel";
@@ -121,6 +129,15 @@ async function cargarAdmin(q: Sql): Promise<MagicBentoItem[]> {
 }
 
 type Tab = "resumen" | "auditoria" | Pantalla;
+// same icons as the dock (components/dock.tsx) for the screens both show
+const ICONOS: Record<Tab, typeof DashboardSquare01Icon> = {
+  resumen: DashboardSquare01Icon,
+  auditoria: FileSearchIcon,
+  ventas: ShoppingBag01Icon,
+  central: Wallet01Icon,
+  empaquetado: Package01Icon,
+  despacho: DeliveryTruck01Icon,
+};
 type Params = { tab?: string } & ParamsAuditoria;
 
 // one tab per role the user holds; the admin also gets the general summary and the order audit first (and can look at
@@ -150,27 +167,15 @@ async function Paneles({ params }: { params: Promise<Params> }) {
   return (
     <>
       {tabs.length > 1 && (
-        <div
-          role="tablist"
-          aria-label="Resumen"
-          className="mb-6 flex w-fit max-w-full gap-1 overflow-x-auto rounded-2xl bg-surface-2 p-1"
-        >
-          {tabs.map((t) => (
-            <Link
-              key={t.id}
-              href={`/?tab=${t.id}`}
-              role="tab"
-              aria-selected={t.id === actual.id}
-              className={`whitespace-nowrap rounded-xl px-4 py-2 text-sm font-medium transition ${
-                t.id === actual.id
-                  ? "bg-primary text-on-primary shadow-sm"
-                  : "text-muted hover:text-text"
-              }`}
-            >
-              {t.label}
-            </Link>
-          ))}
-        </div>
+        <Pestanas
+          label="Resumen"
+          actual={actual.id}
+          tabs={tabs.map((t) => ({
+            ...t,
+            href: `/?tab=${t.id}`,
+            icono: ICONOS[t.id],
+          }))}
+        />
       )}
       <div role="tabpanel">
         {actual.id === "auditoria" ? (

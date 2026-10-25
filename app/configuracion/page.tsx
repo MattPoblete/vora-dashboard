@@ -1,8 +1,14 @@
 import { Suspense } from "react";
-import Link from "next/link";
 import { connection } from "next/server";
 import { Glass } from "@/components/glass";
+import {
+  BankIcon,
+  TimeQuarterPassIcon,
+  UserGroupIcon,
+  UserMultiple02Icon,
+} from "@hugeicons/core-free-icons";
 import { Nav } from "@/components/nav";
+import { Pestanas } from "@/components/pestanas";
 import { transferencia } from "@/lib/mensajes";
 import { PANTALLAS, esPermiso, type Permiso } from "@/lib/permisos";
 import { db, requirePermiso } from "@/lib/session";
@@ -14,10 +20,10 @@ import { Registro } from "./registro";
 import { Restablecer } from "./restablecer";
 
 const TABS = [
-  { id: "usuarios", label: "Usuarios" },
-  { id: "grupos", label: "Grupos de venta" },
-  { id: "transferencia", label: "Transferencia" },
-  { id: "registro", label: "Registro" },
+  { id: "usuarios", label: "Usuarios", icono: UserGroupIcon },
+  { id: "grupos", label: "Grupos de venta", icono: UserMultiple02Icon },
+  { id: "transferencia", label: "Transferencia", icono: BankIcon },
+  { id: "registro", label: "Registro", icono: TimeQuarterPassIcon },
 ] as const;
 type Tab = (typeof TABS)[number]["id"];
 
@@ -242,27 +248,11 @@ async function Contenido({
 
   return (
     <>
-      <div
-        role="tablist"
-        aria-label="Configuración"
-        className="mb-6 flex w-fit max-w-full gap-1 overflow-x-auto rounded-2xl bg-surface-2 p-1"
-      >
-        {TABS.map((t) => (
-          <Link
-            key={t.id}
-            href={`/configuracion?tab=${t.id}`}
-            role="tab"
-            aria-selected={t.id === tab}
-            className={`whitespace-nowrap rounded-xl px-4 py-2 text-sm font-medium transition ${
-              t.id === tab
-                ? "bg-primary text-on-primary shadow-sm"
-                : "text-muted hover:text-text"
-            }`}
-          >
-            {t.label}
-          </Link>
-        ))}
-      </div>
+      <Pestanas
+        label="Configuración"
+        actual={tab}
+        tabs={TABS.map((t) => ({ ...t, href: `/configuracion?tab=${t.id}` }))}
+      />
       <div role="tabpanel">
         {tab === "usuarios" && <Usuarios yoId={yo.usuarioId} />}
         {tab === "grupos" && <Grupos />}
