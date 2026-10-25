@@ -1,12 +1,10 @@
 "use server";
 
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
 import { revalidatePath } from "next/cache";
 import type { Sql } from "postgres";
 import { db, dbq } from "@/lib/session";
 import { cargar, COURIERS, type Courier } from "@/lib/central";
-import { COMPROBANTES, firmaOk, TIPOS } from "@/lib/uploads";
+import { firmaOk, guardar, TIPOS } from "@/lib/uploads";
 import type { Estado } from "../vender/actions";
 
 type Tx = Sql;
@@ -83,9 +81,8 @@ export async function subirComprobante(
     const name = `${p}-${Date.now()}.${ext}`;
     await tx`insert into pagos (pedido_id, monto, comprobante) values (${p}, ${monto}, ${name})`;
     await tx`update ventas set estado = 'esperando_pago' where pedido_id = ${p} and estado = 'reservada'`;
-    // last, so a failed insert leaves no orphan file; a failed write rolls the insert back
-    await mkdir(COMPROBANTES, { recursive: true });
-    await writeFile(path.join(COMPROBANTES, name), buf);
+    // last, so a failed insert leaves no orphan file; a failed upload rolls the insert back
+    await guardar("comprobantes", name, buf);
     return done("Comprobante subido");
   });
 }
@@ -106,7 +103,7 @@ export async function validarPago(_: Estado, f: FormData): Promise<Estado> {
 export async function quitarPago(_: Estado, f: FormData): Promise<Estado> {
   const pid = id(f, "pago");
   if (!pid) return { error: "Pago inválido" };
-  // file stays on disk on purpose: cheap audit trail
+  // the file stays in storage on purpose: cheap audit trail
   const r =
     await dbq`delete from pagos where id = ${pid} and validado_en is null returning id`;
   return r.length

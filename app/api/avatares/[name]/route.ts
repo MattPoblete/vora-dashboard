@@ -1,6 +1,4 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
-import { AVATARES, MIME_IMAGEN } from "@/lib/uploads";
+import { leer, MIME_IMAGEN } from "@/lib/uploads";
 import { getPerfil } from "@/lib/perfil";
 import { getSession } from "@/lib/session";
 
@@ -15,15 +13,13 @@ export async function GET(
   const m = /^[0-9a-f-]{36}\.(jpg|png|webp)$/.exec(name);
   if (!m || (await getPerfil()).avatar !== name)
     return new Response("Not found", { status: 404 });
-  try {
-    return new Response(await readFile(path.join(AVATARES, name)), {
-      headers: {
-        "content-type": MIME_IMAGEN[m[1]],
-        "x-content-type-options": "nosniff",
-        "cache-control": "private, max-age=31536000, immutable", // the name changes when the picture does
-      },
-    });
-  } catch {
-    return new Response("Not found", { status: 404 });
-  }
+  const buf = await leer("avatares", name);
+  if (!buf) return new Response("Not found", { status: 404 });
+  return new Response(new Uint8Array(buf), {
+    headers: {
+      "content-type": MIME_IMAGEN[m[1]],
+      "x-content-type-options": "nosniff",
+      "cache-control": "private, max-age=31536000, immutable", // the name changes when the picture does
+    },
+  });
 }

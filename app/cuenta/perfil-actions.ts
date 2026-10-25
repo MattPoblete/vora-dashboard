@@ -1,15 +1,13 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
-import { mkdir, unlink, writeFile } from "node:fs/promises";
-import path from "node:path";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { sql } from "@/lib/db";
 import { getPerfil } from "@/lib/perfil";
 import { COOKIE, getSession, hashToken } from "@/lib/session";
-import { AVATARES, leerImagen } from "@/lib/uploads";
+import { borrar, guardar, leerImagen } from "@/lib/uploads";
 import type { Estado } from "../vender/actions";
 
 export async function guardarPerfil(_: Estado, f: FormData): Promise<Estado> {
@@ -35,16 +33,12 @@ export async function guardarPerfil(_: Estado, f: FormData): Promise<Estado> {
     : f.get("quitar_avatar") === "on"
       ? null
       : actual;
-  if (foto && nuevo) {
-    await mkdir(AVATARES, { recursive: true });
-    await writeFile(path.join(AVATARES, nuevo), foto.buf);
-  }
+  if (foto && nuevo) await guardar("avatares", nuevo, foto.buf);
   const token = (await cookies()).get(COOKIE)?.value ?? "";
   const [r] =
     await sql`select * from auth_guardar_perfil(${hashToken(token)}, ${nombre}, ${telefono}, ${nuevo})`;
   if (!r?.ok) redirect("/login");
-  if (r.avatar_anterior)
-    await unlink(path.join(AVATARES, r.avatar_anterior)).catch(() => {});
+  if (r.avatar_anterior) await borrar("avatares", r.avatar_anterior);
   revalidatePath("/cuenta");
   return { ok: "Perfil guardado" };
 }

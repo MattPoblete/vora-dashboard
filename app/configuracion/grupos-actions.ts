@@ -1,11 +1,9 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
-import { mkdir, unlink, writeFile } from "node:fs/promises";
-import path from "node:path";
 import { revalidatePath } from "next/cache";
 import { db, requirePermiso } from "@/lib/session";
-import { GRUPOS, leerImagen, type Imagen } from "@/lib/uploads";
+import { borrar, guardar, leerImagen, type Imagen } from "@/lib/uploads";
 import type { Estado } from "../vender/actions";
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -26,10 +24,6 @@ const alias = (f: FormData) =>
 
 type Foto = Imagen;
 const leerFoto = (f: FormData) => leerImagen(f, "foto", 3);
-async function guardarArchivo(nombre: string, buf: Buffer) {
-  await mkdir(GRUPOS, { recursive: true });
-  await writeFile(path.join(GRUPOS, nombre), buf);
-}
 const sinFoto = (x: Foto | { error: string } | null): x is { error: string } =>
   !!x && "error" in x;
 
@@ -60,7 +54,7 @@ export async function crearGrupo(_: Estado, f: FormData): Promise<Estado> {
       if (!g) return { error: `Ya existe el grupo ${nombre}` };
       // moves the two users here: they leave whatever group they were in
       await q`select admin_fijar_miembros(${nombre}, ${q.array(miembros)}::int[])`;
-      if (foto && archivo) await guardarArchivo(archivo, foto.buf);
+      if (foto && archivo) await guardar("grupos", archivo, foto.buf);
       return { ok: `Grupo ${nombre} creado` };
     });
     revalidatePath("/configuracion");
@@ -91,14 +85,13 @@ export async function guardarGrupo(_: Estado, f: FormData): Promise<Estado> {
           : (cur.foto as string | null);
       await q`update grupos_venta set alias = ${alias(f)}, foto = ${nueva} where vendedores = ${grupo}`;
       await q`select admin_fijar_miembros(${grupo}, ${q.array(ids(f))}::int[])`;
-      if (foto && nueva) await guardarArchivo(nueva, foto.buf);
+      if (foto && nueva) await guardar("grupos", nueva, foto.buf);
       return {
         ok: "Guardado",
         viejo: nueva !== cur.foto ? (cur.foto as string | null) : null,
       };
     });
-    if ("viejo" in r && r.viejo)
-      await unlink(path.join(GRUPOS, r.viejo)).catch(() => {});
+    if ("viejo" in r && r.viejo) await borrar("grupos", r.viejo);
     revalidatePath("/configuracion");
     revalidatePath("/vender");
     return "error" in r ? { error: r.error } : { ok: r.ok };

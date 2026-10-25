@@ -12,3 +12,4 @@ psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d vora_dev -f /docker-entrypoint-in
 psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d vora_dev -f /docker-entrypoint-initdb.d/009_limite_ip.sql
 psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d vora_dev -f /docker-entrypoint-initdb.d/010_registro_envio.sql
 psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d vora_dev -f /docker-entrypoint-initdb.d/011_supabase.sql
+psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d vora_dev -f /docker-entrypoint-initdb.d/012_storage.sql
