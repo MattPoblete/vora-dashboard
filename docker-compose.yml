@@ -1,0 +1,17 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: vora_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: vora
+      POSTGRES_PASSWORD: vora
+      POSTGRES_DB: vora
+    ports:
+      - "5433:5432" # 5432 is taken by another local postgres
+    volumes:
+      - vora_pgdata:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro # *.sql run once on first boot
+
+volumes:
+  vora_pgdata:
