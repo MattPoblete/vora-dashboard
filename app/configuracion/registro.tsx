@@ -8,7 +8,7 @@ type Fila = {
   en: Date;
   tabla: string;
   fila_id: number;
-  accion: "insert" | "update";
+  accion: "insert" | "update" | "delete";
   usuario: string | null;
   cambios: Record<string, unknown>;
   quien: string | null; // the client's nick, also for an order
@@ -18,12 +18,21 @@ const TABLAS = [
   { id: "", label: "Todo" },
   { id: "clientes", label: "Clientes" },
   { id: "pedidos", label: "Pedidos" },
+  { id: "pagos", label: "Pagos" },
+  { id: "ventas", label: "Ventas" },
 ] as const;
 
-const NOMBRE = { clientes: "Cliente", pedidos: "Pedido" } as Record<
-  string,
-  string
->;
+const NOMBRE = {
+  clientes: "Cliente",
+  pedidos: "Pedido",
+  pagos: "Pago",
+  ventas: "Venta",
+} as Record<string, string>;
+const ACCION = {
+  insert: ["creado", "bg-success/20 text-success-fg"],
+  update: ["editado", "bg-info/20 text-info-fg"],
+  delete: ["eliminado", "bg-danger/20 text-danger-fg"],
+} as const;
 const val = (v: unknown) =>
   v === null || v === undefined || v === "" ? "—" : String(v).slice(0, 40);
 const fecha = (d: Date) =>
@@ -40,7 +49,7 @@ const fecha = (d: Date) =>
 // what changed, one short line per field
 function Detalle({ f }: { f: Fila }) {
   const campos = Object.entries(f.cambios).filter(([k]) => k !== "id");
-  if (f.accion === "insert")
+  if (f.accion !== "update")
     return (
       <span className="text-muted">
         {campos
@@ -73,6 +82,10 @@ export async function Registro({ tabla }: { tabla: string }) {
              case r.tabla
                when 'clientes' then (select nombre from clientes where id = r.fila_id)
                when 'pedidos' then (select c.nombre from pedidos p join clientes c on c.id = p.cliente_id where p.id = r.fila_id)
+               -- deleted rows are gone: fall back to what the log kept of them
+               when 'pagos' then (select c.nombre from pedidos p join clientes c on c.id = p.cliente_id
+                                  where p.id = coalesce((select pedido_id from pagos where id = r.fila_id), (r.cambios->>'pedido_id')::int))
+               when 'ventas' then coalesce((select comprador_texto from ventas where id = r.fila_id), r.cambios->>'comprador_texto')
              end quien
       from registro r
       ${filtro ? q`where r.tabla = ${filtro}` : q``}
@@ -125,13 +138,9 @@ export async function Registro({ tabla }: { tabla: string }) {
                         <span className="text-muted"> · {f.quien}</span>
                       )}
                       <span
-                        className={`ml-2 rounded-full px-2 py-0.5 text-xs ${
-                          f.accion === "insert"
-                            ? "bg-success/20 text-success-fg"
-                            : "bg-info/20 text-info-fg"
-                        }`}
+                        className={`ml-2 rounded-full px-2 py-0.5 text-xs ${ACCION[f.accion][1]}`}
                       >
-                        {f.accion === "insert" ? "creado" : "editado"}
+                        {ACCION[f.accion][0]}
                       </span>
                     </td>
                     <td className="py-2">
