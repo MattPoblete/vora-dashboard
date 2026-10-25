@@ -12,4 +12,7 @@ const url =
 if (!url) throw new Error("Falta DATABASE_URL");
 
 // ponytail: module-level singleton; dev HMR may leak a pool, stash on globalThis if it bites
-export const sql = postgres(url, { max: 5 });
+// prepare: false so it also works through Supabase's transaction pooler (port 6543, the one for serverless/Vercel),
+// which can't keep prepared statements. Its other limit (nothing survives between transactions) is already met: the
+// per-request role switch is SET LOCAL inside a transaction (lib/session.ts), the rest are single statements
+export const sql = postgres(url, { max: 5, prepare: false });

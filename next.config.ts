@@ -47,7 +47,7 @@ const nextConfig: NextConfig = {
   // 172.20.10.* is the iPhone hotspot range, 192.168.* the usual home/office router range.
   allowedDevOrigins: ["172.20.10.*", "192.168.*.*"],
   partialPrefetching: true,
-  experimental: { serverActions: { bodySizeLimit: "10mb" } }, // transfer receipts
+  experimental: { serverActions: { bodySizeLimit: "4.5mb" } }, // transfer receipts; Vercel caps bodies at 4.5 MB
   turbopack: {
     rules: {
       "*.css": {

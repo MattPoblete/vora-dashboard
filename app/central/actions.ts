@@ -8,7 +8,9 @@ import { firmaOk, guardar, TIPOS } from "@/lib/uploads";
 import type { Estado } from "../vender/actions";
 
 type Tx = Sql;
-const MAX = 10 * 1024 * 1024;
+// Vercel rejects request bodies over 4.5 MB before the action runs; bank receipts (screenshots, PDFs) are far smaller.
+// ponytail: if photos of paper receipts ever exceed it, upload straight to Storage with a signed upload URL
+const MAX = 4 * 1024 * 1024;
 const done = (ok: string): Estado => {
   revalidatePath("/central");
   return { ok };
@@ -70,7 +72,7 @@ export async function subirComprobante(
     return { error: "Adjunta el comprobante" };
   const ext = TIPOS[file.type];
   if (!ext) return { error: "Formato no permitido (JPG, PNG, WEBP o PDF)" };
-  if (file.size > MAX) return { error: "El archivo supera 10 MB" };
+  if (file.size > MAX) return { error: "El archivo supera 4 MB" };
 
   const buf = Buffer.from(await file.arrayBuffer());
   if (!firmaOk(ext, buf))
