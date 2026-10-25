@@ -1,7 +1,7 @@
 "use server";
 
 import { randomBytes } from "node:crypto";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { sql } from "@/lib/db";
 import { HASH_FALSO, verificarPassword } from "@/lib/password";
@@ -17,6 +17,18 @@ export async function login(_: LoginEstado, f: FormData): Promise<LoginEstado> {
   const clave = String(f.get("clave") ?? "");
   if (!usuario || !clave) return { error: "Ingresa usuario y contraseña" };
 
+  // last entry: the one our reverse proxy appended (earlier ones are whatever the client sent).
+  // ponytail: assumes exactly one proxy in front; with a CDN + load balancer pick the entry that one adds
+  const ip =
+    (await headers()).get("x-forwarded-for")?.split(",").at(-1)?.trim() ||
+    "desconocida";
+  const [{ bloqueada }] = await sql`select auth_ip_bloqueada(${ip}) bloqueada`;
+  if (bloqueada)
+    return {
+      error:
+        "Demasiados intentos fallidos desde esta red. Prueba de nuevo en 15 minutos.",
+    };
+
   const [u] = await sql`select * from auth_intento(${usuario})`;
   const ok = await verificarPassword(
     clave,
@@ -29,6 +41,7 @@ export async function login(_: LoginEstado, f: FormData): Promise<LoginEstado> {
     };
   if (!u || !ok) {
     if (u) await sql`select auth_fallo(${u.id})`;
+    await sql`select auth_fallo_ip(${ip})`;
     return { error: "Usuario o contraseña incorrectos" };
   }
 
