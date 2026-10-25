@@ -93,12 +93,9 @@ export async function Grupos() {
             (v) => v.vendedores === g.vendedores,
           );
           return (
-            <article
-              key={g.vendedores}
-              className="overflow-hidden rounded-xl border border-border bg-surface"
-            >
+            <article key={g.vendedores} className="border-t border-border">
               <div
-                className={`relative flex items-end bg-surface-2 bg-cover bg-center p-4 ${g.foto ? "h-40" : "h-24"}`}
+                className={`relative flex items-end bg-cover bg-center ${g.foto ? "mt-3 h-40 overflow-hidden rounded-xl p-4" : "pt-3"}`}
                 style={
                   g.foto
                     ? { backgroundImage: `url(/api/grupos/${g.foto})` }
@@ -110,7 +107,7 @@ export async function Grupos() {
                 )}
                 <div className="relative">
                   <h3
-                    className={`text-xl font-semibold ${g.foto ? "text-white" : ""}`}
+                    className={`font-display text-2xl font-medium ${g.foto ? "text-white" : ""}`}
                   >
                     {nombreGrupo(g)}
                   </h3>
@@ -123,7 +120,7 @@ export async function Grupos() {
                   </p>
                 </div>
               </div>
-              <details className="group p-4">
+              <details className="group py-3">
                 <summary className="flex w-fit items-center gap-1 text-sm font-medium text-primary">
                   Editar
                   <span

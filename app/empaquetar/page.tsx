@@ -57,10 +57,7 @@ async function Tablero({ params }: { params: Promise<{ abrir?: string }> }) {
           Imprimir etiquetas ({paquetes.length})
         </Link>
       </div>
-      <Panel
-        title={`Cola de empaquetado · ${items.length}`}
-        className="p-3! sm:p-6!"
-      >
+      <Panel title={`Cola de empaquetado · ${items.length}`}>
         <Cola
           items={items}
           detalles={detalles}

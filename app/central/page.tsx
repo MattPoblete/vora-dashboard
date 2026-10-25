@@ -59,7 +59,7 @@ async function Tablero({ params }: { params: Promise<{ abrir?: string }> }) {
       }
     : {};
   return (
-    <Panel title={`Cola de pedidos · ${items.length}`} className="p-3! sm:p-6!">
+    <Panel title={`Cola de pedidos · ${items.length}`}>
       <Cola
         items={items}
         detalles={detalles}

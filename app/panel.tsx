@@ -1,41 +1,8 @@
 import type { ReactNode } from "react";
-import { HugeiconsIcon } from "@hugeicons/react";
-import {
-  ChartLineData01Icon,
-  LiveStreaming02Icon,
-  ReceiptDollarIcon,
-  Tag01Icon,
-  TaskDone01Icon,
-  UserMultiple02Icon,
-  UserStar01Icon,
-  Clock01Icon,
-  DeliveryTruck01Icon,
-  Money01Icon,
-  Package01Icon,
-  ShoppingBag01Icon,
-  Wallet01Icon,
-} from "@hugeicons/core-free-icons";
 import type { ItemBento } from "@/components/bento";
 import { COURIERS } from "@/lib/central";
 import { duracion, num } from "@/lib/formato";
 import type { Dia, Fila } from "@/lib/estadisticas";
-
-const ICONOS = {
-  ventas: ShoppingBag01Icon,
-  central: Wallet01Icon,
-  empaquetado: Package01Icon,
-  despacho: DeliveryTruck01Icon,
-  monto: Money01Icon,
-  reloj: Clock01Icon,
-  serie: ChartLineData01Icon,
-  live: LiveStreaming02Icon,
-  ticket: ReceiptDollarIcon,
-  material: Tag01Icon,
-  estados: TaskDone01Icon,
-  parejas: UserMultiple02Icon,
-  clientes: UserStar01Icon,
-};
-type Icono = keyof typeof ICONOS;
 
 export { clp, num } from "@/lib/formato";
 export const courier = (id: string) =>
@@ -49,38 +16,24 @@ export function hace(desde: Date | null) {
   );
 }
 
-function Tarjeta({
-  icono,
-  label,
-  children,
-}: {
-  icono: Icono;
-  label: string;
-  children: ReactNode;
-}) {
+function Tarjeta({ label, children }: { label: string; children: ReactNode }) {
   return (
     <>
-      <div className="flex items-center gap-2 text-sm text-muted">
-        <HugeiconsIcon icon={ICONOS[icono]} size={16} strokeWidth={1.8} />
-        <span>{label}</span>
-      </div>
+      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
+        {label}
+      </p>
       {children}
     </>
   );
 }
 
 // one big number with a line of context under it
-export function kpi(
-  icono: Icono,
-  label: string,
-  valor: string,
-  nota?: string,
-): ItemBento {
+export function kpi(label: string, valor: string, nota?: string): ItemBento {
   return {
     id: label,
     content: (
-      <Tarjeta icono={icono} label={label}>
-        <p className="mt-3 truncate text-2xl font-semibold tabular-nums leading-none sm:text-3xl">
+      <Tarjeta label={label}>
+        <p className="mt-3 truncate font-display text-3xl tabular-nums leading-none sm:text-5xl">
           {valor}
         </p>
         {nota && <p className="mt-1.5 truncate text-sm text-muted">{nota}</p>}
@@ -97,9 +50,9 @@ export function serie(label: string, dias: Dia[], total: string): ItemBento {
     id: label,
     colSpan: 2,
     content: (
-      <Tarjeta icono="serie" label={label}>
+      <Tarjeta label={label}>
         <p className="mt-3 text-sm text-muted">
-          <span className="text-xl font-semibold tabular-nums text-text">
+          <span className="font-display text-2xl tabular-nums text-text">
             {total}
           </span>{" "}
           últimos 7 días
@@ -109,7 +62,7 @@ export function serie(label: string, dias: Dia[], total: string): ItemBento {
             <div
               key={d.dia}
               title={`${d.dia}: ${d.n}`}
-              className={`flex-1 rounded-t ${d.n === pico && pico > 0 ? "bg-primary" : "bg-primary-soft"}`}
+              className={`flex-1 rounded-t-sm ${d.n === pico && pico > 0 ? "bg-primary" : "bg-primary-soft"}`}
               style={{ height: `${(d.n / max) * 100}%` }}
             />
           ))}
@@ -128,7 +81,6 @@ export function serie(label: string, dias: Dia[], total: string): ItemBento {
 
 // ranked rows with a thin bar; `nombre` rewrites the raw key (enum values, courier ids)
 export function lista(
-  icono: Icono,
   label: string,
   filas: Fila[],
   opts: {
@@ -143,7 +95,7 @@ export function lista(
     id: label,
     colSpan: 2,
     content: (
-      <Tarjeta icono={icono} label={label}>
+      <Tarjeta label={label}>
         {filas.length === 0 ? (
           <p className="mt-3 text-sm text-muted">
             {opts.vacio ?? "Sin datos todavía."}
@@ -161,9 +113,9 @@ export function lista(
                   </span>
                   <span className="tabular-nums text-muted">{num(f.v)}</span>
                 </div>
-                <div className="mt-1 h-1.5 rounded-full bg-surface-2">
+                <div className="mt-1.5 h-1 bg-surface-2">
                   <div
-                    className={`h-1.5 rounded-full ${opts.color?.(f.k) ?? "bg-primary"}`}
+                    className={`h-1 ${opts.color?.(f.k) ?? "bg-primary"}`}
                     style={{ width: `${(f.v / max) * 100}%` }}
                   />
                 </div>

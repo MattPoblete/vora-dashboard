@@ -28,12 +28,13 @@ const ICONOS = {
 export type ItemDock = { id: keyof typeof ICONOS; href: string; label: string };
 
 // phone/tablet: icon over its label, as wide as the label (six fit a 390px phone);
-// desktop (lg): icon beside the label, like any top bar link
+// desktop (lg): icon beside the label, full bar height so the active underline sits on the bar's rule
 const boton =
-  "flex h-12 min-w-12 flex-col items-center justify-center gap-0.5 rounded-xl px-1.5 text-[11px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-primary sm:min-w-16 sm:px-2 lg:h-9 lg:min-w-0 lg:flex-row lg:gap-2 lg:rounded-lg lg:px-3 lg:text-sm";
+  "flex h-12 min-w-12 flex-col items-center justify-center gap-0.5 rounded-xl px-1.5 text-[11px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-primary sm:min-w-16 sm:px-2 lg:h-14 lg:min-w-0 lg:flex-row lg:gap-2 lg:rounded-none lg:px-3 lg:text-sm";
 // colors live in the two states (never both in one string, otherwise hover:bg-* and bg-* would compete)
 const reposo = "text-muted hover:bg-surface-2 hover:text-text";
-const actual_ = "bg-primary-soft text-primary";
+const actual_ =
+  "bg-primary-soft text-primary lg:bg-transparent lg:text-text lg:shadow-[inset_0_-2px_0_var(--primary)]";
 const esActivo = (item: ItemDock, actual: string) =>
   item.href === "/" ? actual === "/" : actual.startsWith(item.href);
 
@@ -192,14 +193,14 @@ export function Dock({
     <div className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex justify-center px-2 lg:bottom-auto lg:top-0 lg:px-0">
       <nav
         aria-label="Navegación"
-        className="pointer-events-auto max-w-full rounded-2xl border border-border bg-surface p-1 shadow-lg lg:w-full lg:rounded-none lg:border-x-0 lg:border-t-0 lg:px-8 lg:py-2 lg:shadow-none"
+        className="pointer-events-auto max-w-full rounded-2xl border border-border bg-surface p-1 shadow-lg lg:w-full lg:rounded-none lg:border-x-0 lg:border-t-0 lg:px-8 lg:py-0 lg:shadow-none"
       >
         <div className="flex items-center gap-0.5 sm:gap-1 lg:mx-auto lg:max-w-6xl">
           <Link
             href="/"
-            className="mr-4 hidden font-semibold tracking-tight lg:order-first lg:block"
+            className="mr-6 hidden font-display text-2xl font-medium tracking-tight lg:order-first lg:block"
           >
-            Vora Boutique
+            Vora <span className="text-base italic text-muted">Boutique</span>
           </Link>
           {secciones.map((it) => (
             <Enlace key={it.id} item={it} activo={esActivo(it, actual)} />

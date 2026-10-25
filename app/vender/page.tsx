@@ -53,13 +53,13 @@ function Iniciar({ grupos }: { grupos: Grupo[] }) {
                 ? { backgroundImage: `url(/api/grupos/${g.foto})` }
                 : undefined
             }
-            className={`relative flex flex-col items-start justify-end gap-0.5 overflow-hidden rounded-xl border border-border bg-surface-2 bg-cover bg-center p-4 text-left transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-primary ${g.foto ? "h-40 text-white" : "h-24 hover:bg-primary-soft"}`}
+            className={`relative flex flex-col items-start justify-end gap-0.5 overflow-hidden bg-cover bg-center text-left transition-colors focus-visible:outline-2 focus-visible:outline-primary ${g.foto ? "h-40 rounded-xl p-4 text-white" : "border-t border-border pb-2 pt-3 hover:border-primary hover:text-primary"}`}
           >
             {/* the scrim keeps the name readable over any photo */}
             {g.foto && (
               <span className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
             )}
-            <span className="relative text-lg font-semibold">
+            <span className="relative font-display text-2xl font-medium">
               {nombreGrupo(g)}
             </span>
             <span

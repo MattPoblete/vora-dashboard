@@ -38,30 +38,24 @@ const PANELES: Record<Pantalla, (q: Sql) => Promise<ItemBento[]>> = {
   async ventas(q) {
     const { hoy, live, semana, materiales } = await estadVentas(q);
     return [
-      kpi("ventas", "Ventas de hoy", num(hoy.n), clp(hoy.monto)),
+      kpi("Ventas de hoy", num(hoy.n), clp(hoy.monto)),
       kpi(
-        "live",
         "Live en curso",
         live ? num(live.n) : "—",
         live ? `${live.vendedores} · ${clp(live.monto)}` : "Sin live activo",
       ),
       serie("Ventas por día", semana, suma(semana)),
-      lista("material", "Materiales más vendidos (30 días)", materiales),
+      lista("Materiales más vendidos (30 días)", materiales),
       ir("/vender", "Agregar venta"),
     ];
   },
   async central(q) {
     const { estados, porCobrar, pagos, semana } = await estadCentral(q);
     return [
-      kpi("monto", "Por cobrar", clp(porCobrar), "reservadas y esperando pago"),
-      kpi(
-        "central",
-        "Pagos validados hoy",
-        num(pagos.n),
-        clp(pagos.monto as number),
-      ),
+      kpi("Por cobrar", clp(porCobrar), "reservadas y esperando pago"),
+      kpi("Pagos validados hoy", num(pagos.n), clp(pagos.monto as number)),
       serie("Pedidos enviados a empaque", semana, suma(semana)),
-      lista("central", "Ventas en tu cola", estados, {
+      lista("Ventas en tu cola", estados, {
         nombre: estado,
         color: colorEstado,
       }),
@@ -71,15 +65,10 @@ const PANELES: Record<Pantalla, (q: Sql) => Promise<ItemBento[]>> = {
   async empaquetado(q) {
     const { cola, couriers, desde, semana } = await estadEmpaque(q);
     return [
-      kpi(
-        "empaquetado",
-        "Pedidos por empaquetar",
-        num(cola.pedidos),
-        prendas(cola.prendas),
-      ),
-      kpi("reloj", "Espera más antigua", hace(desde), "pedido más viejo"),
+      kpi("Pedidos por empaquetar", num(cola.pedidos), prendas(cola.prendas)),
+      kpi("Espera más antigua", hace(desde), "pedido más viejo"),
       serie("Paquetes empaquetados", semana, suma(semana)),
-      lista("empaquetado", "Pendientes por courier", couriers, {
+      lista("Pendientes por courier", couriers, {
         nombre: courier,
         vacio: "Nada por empaquetar.",
       }),
@@ -90,14 +79,13 @@ const PANELES: Record<Pantalla, (q: Sql) => Promise<ItemBento[]>> = {
     const { couriers, desde, semana } = await estadDespacho(q);
     return [
       kpi(
-        "despacho",
         "Paquetes por despachar",
         num(couriers.reduce((a, c) => a + c.v, 0)),
         "esperando al courier",
       ),
-      kpi("reloj", "Espera más antigua", hace(desde), "paquete más viejo"),
+      kpi("Espera más antigua", hace(desde), "paquete más viejo"),
       serie("Paquetes entregados al courier", semana, suma(semana)),
-      lista("despacho", "Por courier", couriers, {
+      lista("Por courier", couriers, {
         nombre: courier,
         vacio: "Nada por despachar.",
       }),
@@ -109,22 +97,21 @@ const PANELES: Record<Pantalla, (q: Sql) => Promise<ItemBento[]>> = {
 async function cargarAdmin(q: Sql): Promise<ItemBento[]> {
   const { t, lives, estados, parejas, clientes, semana } = await estadAdmin(q);
   return [
-    kpi("ventas", "Ventas", num(t.ventas)),
-    kpi("monto", "Monto vendido", clp(Number(t.monto))),
+    kpi("Ventas", num(t.ventas)),
+    kpi("Monto vendido", clp(Number(t.monto))),
     kpi(
-      "ticket",
       "Ticket promedio",
       t.ventas ? clp(Math.round(Number(t.monto) / t.ventas)) : "—",
       "por prenda vendida",
     ),
-    kpi("live", "Lives activos", num(lives.activos), `de ${num(lives.total)}`),
+    kpi("Lives activos", num(lives.activos), `de ${num(lives.total)}`),
     serie("Ventas por día", semana, suma(semana)),
-    lista("estados", "Ventas por estado", estados, {
+    lista("Ventas por estado", estados, {
       nombre: estado,
       color: colorEstado,
     }),
-    lista("parejas", "Parejas (30 días)", parejas),
-    lista("clientes", "Mejores clientes", clientes, { arroba: true }),
+    lista("Parejas (30 días)", parejas),
+    lista("Mejores clientes", clientes, { arroba: true }),
   ];
 }
 

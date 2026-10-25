@@ -8,20 +8,20 @@ export type ItemBento = {
   href?: string;
 };
 
-const caja =
-  "flex flex-col rounded-xl border border-border bg-surface p-5 shadow-sm";
+// no boxes: an ink rule over each block, like a printed page
+const caja = "flex flex-col border-t border-text pt-3";
 
 // 2 columns on a phone (the KPIs pair up), 4 on a wide screen; wide cards take 2. Heights follow the content.
 export function Bento({ items }: { items: ItemBento[] }) {
   return (
-    <div className="grid grid-flow-row-dense grid-cols-2 gap-4 lg:grid-cols-4">
+    <div className="grid grid-flow-row-dense grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-4 lg:gap-x-10">
       {items.map((it) => {
         const clase = `${caja} ${it.colSpan === 2 ? "col-span-2" : ""}`;
         return it.href ? (
           <Link
             key={it.id}
             href={it.href}
-            className={`${clase} transition-colors hover:border-primary`}
+            className={`${clase} transition-colors hover:border-primary hover:text-primary`}
           >
             {it.content}
           </Link>

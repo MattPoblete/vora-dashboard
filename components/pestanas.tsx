@@ -20,7 +20,7 @@ export function Pestanas({
     <div
       role="tablist"
       aria-label={label}
-      className="mb-6 flex w-fit max-w-full gap-1 overflow-x-auto rounded-xl bg-surface-2 p-1 max-sm:pr-8 max-sm:[mask-image:linear-gradient(to_right,black_calc(100%-2rem),transparent)]"
+      className="mb-8 flex max-w-full gap-6 overflow-x-auto border-b border-border max-sm:pr-8 max-sm:[mask-image:linear-gradient(to_right,black_calc(100%-2rem),transparent)]"
     >
       {tabs.map((t) => {
         const activo = t.id === actual;
@@ -30,10 +30,10 @@ export function Pestanas({
             href={t.href}
             role="tab"
             aria-selected={activo}
-            className={`flex h-9 items-center whitespace-nowrap rounded-lg px-3.5 text-sm font-medium transition ${
+            className={`-mb-px flex h-10 items-center whitespace-nowrap border-b-2 text-sm font-medium transition-colors ${
               activo
-                ? "bg-surface text-text shadow-sm"
-                : "text-muted hover:text-text"
+                ? "border-primary text-text"
+                : "border-transparent text-muted hover:text-text"
             }`}
           >
             {t.label}

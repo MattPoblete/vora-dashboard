@@ -9,14 +9,16 @@ export function Panel({
   title?: string;
   children: React.ReactNode;
   className?: string;
-  plano?: boolean; // true: the box already sits inside another surface (modal), so no second border
+  plano?: boolean; // true: inside another surface (modal): padding, no rule
 }) {
   return (
     <section
       id={id}
-      className={`p-6 ${plano ? "" : "rounded-xl border border-border bg-surface shadow-sm"} ${className}`}
+      className={`${plano ? "p-6" : "border-t border-text pt-4"} ${className}`}
     >
-      {title && <h2 className="mb-4 text-base font-semibold">{title}</h2>}
+      {title && (
+        <h2 className="mb-4 font-display text-xl font-medium">{title}</h2>
+      )}
       {children}
     </section>
   );

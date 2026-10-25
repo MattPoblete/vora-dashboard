@@ -48,9 +48,9 @@ export function Encabezado({
   accion?: ReactNode;
 }) {
   return (
-    <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
+    <header className="mb-8 flex flex-wrap items-end justify-between gap-3">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+        <h1 className="font-display text-3xl font-medium tracking-tight sm:text-4xl">
           {titulo}
         </h1>
         {subtitulo && <p className="mt-1 text-muted">{subtitulo}</p>}
