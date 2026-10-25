@@ -3,7 +3,7 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { db, dbq, esAdmin, requirePermiso } from "@/lib/session";
 import { gruposParaLive, nombreGrupo, type Grupo } from "@/lib/grupos";
-import { Glass } from "@/components/glass";
+import { Panel } from "@/components/panel";
 import { iniciarLive } from "./actions";
 import { VentaForm } from "./form";
 import { Lista, type Venta } from "./lista";
@@ -33,15 +33,15 @@ const hora = (d: Date) =>
 function Iniciar({ grupos }: { grupos: Grupo[] }) {
   if (!grupos.length)
     return (
-      <Glass title="Iniciar live">
+      <Panel title="Iniciar live">
         <p className="text-muted">
           Todavía no estás en un grupo de venta. Pídele al administrador que te
           agregue a uno.
         </p>
-      </Glass>
+      </Panel>
     );
   return (
-    <Glass title="Iniciar live · ¿quién transmite?">
+    <Panel title="Iniciar live · ¿quién transmite?">
       {/* accordion gallery: the hovered/focused pair grows; on phones they simply stack */}
       <form
         action={iniciarLive}
@@ -74,7 +74,7 @@ function Iniciar({ grupos }: { grupos: Grupo[] }) {
           </button>
         ))}
       </form>
-    </Glass>
+    </Panel>
   );
 }
 
@@ -124,7 +124,7 @@ async function Vender({
       <PanelesVenta
         cantidad={ultimas.length}
         formulario={
-          <Glass>
+          <Panel>
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-xl font-semibold">{titulo(live)}</h2>
@@ -133,10 +133,10 @@ async function Vender({
               <Finalizar id={live.id} />
             </div>
             <VentaForm live={live.id} materiales={materiales} />
-          </Glass>
+          </Panel>
         }
         ultimas={
-          <Glass title="Últimas ventas">
+          <Panel title="Últimas ventas">
             {/* the scroll lives inside: the glass layer is absolutely positioned and would not follow a scrolling card */}
             <div className="max-h-[calc(100vh-14rem)] overflow-y-auto pr-1">
               {ultimas.length === 0 ? (
@@ -145,7 +145,7 @@ async function Vender({
                 <Lista ventas={ultimas as unknown as Venta[]} />
               )}
             </div>
-          </Glass>
+          </Panel>
         }
       />
     </>

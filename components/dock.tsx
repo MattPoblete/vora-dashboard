@@ -2,13 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   DashboardSquare01Icon,
@@ -21,10 +15,6 @@ import {
   UserSettings01Icon,
   Wallet01Icon,
 } from "@hugeicons/core-free-icons";
-import AnimatedList from "./AnimatedList";
-import GlassSurface from "./GlassSurface";
-import { IconoActivo } from "./icono-activo";
-import { useEscritorio } from "./tema";
 
 // one icon per destination, so each button reads at a glance
 const ICONOS = {
@@ -57,11 +47,8 @@ function Con({ label, children }: { label: string; children: ReactNode }) {
 
 // layout + motion shared by every dock button; colors live in the three states below (never both in one string,
 // otherwise hover:bg-* and bg-* would compete and the winner would depend on CSS order)
-const boton = `relative grid ${tam} place-items-center rounded-2xl transition duration-200 hover:-translate-y-1 hover:scale-125 focus-visible:-translate-y-1 focus-visible:scale-125 focus-visible:outline-none`;
-// the profile circle: same motion as the dock buttons, but round and a fixed 32px (half the old size)
-const botonRedondo = boton
-  .replace(`rounded-2xl`, `rounded-full`)
-  .replace(tam, `size-8`);
+const boton = `relative grid ${tam} place-items-center rounded-xl transition-colors focus-visible:outline-2 focus-visible:outline-primary`;
+const botonRedondo = boton.replace(`rounded-xl`, `rounded-full`);
 const reposo =
   "text-text/80 hover:bg-surface-2 hover:text-text focus-visible:bg-surface-2 focus-visible:text-text";
 const actual_ =
@@ -76,110 +63,16 @@ function Enlace({ item, activo }: { item: ItemDock; activo: boolean }) {
         href={item.href}
         aria-label={item.label}
         aria-current={activo ? "page" : undefined}
-        data-dock=""
-        // active: the sliding glass lens (see Lente) sits on top and is the highlight, so the plain icon hides
-        className={`${boton} ${activo ? "" : reposo}`}
+        className={`${boton} ${activo ? actual_ : reposo}`}
       >
-        <HugeiconsIcon
-          icon={ICONOS[item.id]}
-          size={23}
-          strokeWidth={1.7}
-          className={activo ? "opacity-0" : undefined}
-        />
+        <HugeiconsIcon icon={ICONOS[item.id]} size={22} strokeWidth={1.7} />
       </Link>
     </Con>
   );
 }
 
-// The active button's glass icon as ONE lens that slides from the old button to the new one, stretching like a drop
-// on the way and settling with a small bounce. The dock lives in the root layout, so it stays mounted across
-// navigations and the lens remembers where it was. Moved with the `translate` property (not `transform`): the
-// independent `scale` of the drop then stretches the lens in place instead of also scaling its offset.
-function Lente({
-  item,
-  escritorio,
-}: {
-  item: ItemDock | undefined;
-  escritorio: boolean;
-}) {
-  const lente = useRef<HTMLSpanElement>(null);
-  const previa = useRef<{ x: number; y: number } | null>(null);
-  const indice = item?.id;
-  useLayoutEffect(() => {
-    const l = lente.current;
-    if (!l) return;
-    // the nav is the lens' parent (not a ref from the Dock: a parent's ref is attached after its children's
-    // layout effects run, so on mount it would still be null). The tooltip wrapper, unlike the link, never scales
-    // on hover.
-    const destino = l.parentElement?.querySelector<HTMLElement>(
-      "[aria-current=page][data-dock]",
-    )?.parentElement;
-    if (!destino) {
-      l.style.opacity = "0";
-      previa.current = null;
-      return;
-    }
-    const a = { x: destino.offsetLeft, y: destino.offsetTop };
-    const de = previa.current;
-    previa.current = a;
-    l.style.translate = `${a.x}px ${a.y}px`;
-    l.style.opacity = "1";
-    const quieto = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-    if (!de || de.x === a.x || quieto) return;
-    l.animate(
-      [
-        { translate: `${de.x}px ${de.y}px`, scale: "1 1" },
-        { scale: "1.25 0.84", offset: 0.35 }, // the drop: wider and flatter mid-flight
-        { scale: "0.96 1.04", offset: 0.75 }, // a little wobble as it lands
-        { translate: `${a.x}px ${a.y}px`, scale: "1 1" },
-      ],
-      { duration: 520, easing: "cubic-bezier(0.34, 1.12, 0.5, 1)" },
-    );
-  }, [indice, escritorio]);
-
-  return (
-    <span
-      ref={lente}
-      aria-hidden
-      className={`pointer-events-none absolute left-0 top-0 z-10 grid ${tam} place-items-center opacity-0`}
-    >
-      {item && (
-        <IconoActivo
-          icon={ICONOS[item.id]}
-          size={escritorio ? 50 : 40}
-          intro={false}
-        />
-      )}
-      <span className="absolute -bottom-1.5 h-1 w-1 rounded-full bg-primary" />
-    </span>
-  );
-}
-
-// ---------- account menu: an AnimatedList that opens above the user button ----------
+// ---------- account menu: opens above the user button ----------
 export type UsuarioDock = { nombre: string; avatar: string | null };
-
-// MagicBento/AnimatedList ship their own palettes; point every color at the app tokens (the `style` prop wins)
-const TEMA_LISTA = {
-  "--al-frame": "var(--surface)",
-  "--al-frame-edge": "var(--border)",
-  "--al-frame-highlight": "transparent",
-  "--al-frame-shadow":
-    "0 22px 44px -20px color-mix(in srgb, var(--text) 55%, transparent)",
-  "--al-tile": "var(--surface-2)",
-  "--al-tile-edge": "var(--border)",
-  "--al-tile-highlight": "transparent",
-  "--al-tile-shadow": "none",
-  "--al-well": "var(--surface-2)",
-  "--al-ink": "var(--text)",
-  "--al-muted": "var(--text-muted)",
-  "--al-thumb": "var(--border)",
-  "--al-ring-fill": "color-mix(in srgb, var(--primary) 12%, transparent)",
-  "--al-hover": "brightness(1.08)",
-  "--al-press": "brightness(0.92)",
-  "--al-active": "none",
-} as React.CSSProperties;
 
 function MenuUsuario({
   usuario,
@@ -270,34 +163,41 @@ function MenuUsuario({
         </span>
       )}
       {abierto && (
-        <div className="absolute bottom-full right-0 z-10 mb-4 w-[min(17rem,calc(100vw-1.5rem))]">
-          <AnimatedList
-            items={items}
-            width="100%"
-            theme="dark"
-            accentColor="var(--primary)"
-            radius={14}
-            gap={6}
-            animation="pop"
-            selectOnHover
-            showGradients={false}
-            displayScrollbar={false}
-            style={TEMA_LISTA}
-            onItemSelect={(it: { id: string }) => {
-              setAbierto(false);
-              if (it.id === "perfil") router.push("/cuenta");
-              else if (it.id === "admin") router.push("/configuracion");
-              else formSalir.current?.requestSubmit();
-            }}
-          />
-        </div>
+        <ul
+          role="menu"
+          className="absolute bottom-full right-0 z-10 mb-3 w-64 rounded-xl border border-border bg-surface p-1.5 shadow-lg"
+        >
+          {items.map((it) => (
+            <li key={it.id} role="none">
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setAbierto(false);
+                  if (it.id === "perfil") router.push("/cuenta");
+                  else if (it.id === "admin") router.push("/configuracion");
+                  else formSalir.current?.requestSubmit();
+                }}
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:outline-none"
+              >
+                <span className="text-muted">{it.icon}</span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-medium">{it.title}</span>
+                  <span className="block truncate text-xs text-muted">
+                    {it.description}
+                  </span>
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
       )}
       <form ref={formSalir} action={salir} hidden />
     </div>
   );
 }
 
-// Floating glass dock at the bottom (sections, summary in the middle) and, apart from it, the profile circle on the right.
+// Floating dock at the bottom (sections, summary in the middle) with the profile circle at its end.
 // Labels show on hover/focus.
 export function Dock({
   principal,
@@ -311,51 +211,18 @@ export function Dock({
   salir: () => void | Promise<void>;
 }) {
   const actual = usePathname();
-  const refraccion = useEscritorio();
-  // both glasses share the look; `visible` lets tooltips and the account menu stick out above them
-  const vidrio = {
-    renderer: "svg",
-    refraction: refraccion,
-    distortionScale: -70,
-    displace: 3,
-    backgroundOpacity: 0.224, // frost: 20% lighter than 0.28
-    saturation: 1.3,
-    className: "pointer-events-auto",
-  } as const;
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex items-center justify-center gap-3 px-2 sm:gap-8">
-      {/* same width as the profile circle, so the dock itself stays centered */}
-      <span aria-hidden className="w-8 shrink-0" />
-      <GlassSurface
-        {...vidrio}
-        height={68}
-        borderRadius={34}
-        width="fit-content"
-        style={{ overflow: "visible", maxWidth: "100%" }}
+    <div className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex justify-center px-2">
+      <nav
+        aria-label="Navegación"
+        className="pointer-events-auto flex items-center gap-0.5 rounded-2xl border border-border bg-surface p-1.5 shadow-lg sm:gap-1"
       >
-        <nav
-          aria-label="Navegación"
-          // relative: the lens is positioned from each button's offsetLeft/Top inside the nav
-          className="relative flex items-center gap-0.5 px-1.5 sm:gap-2 sm:px-3"
-        >
-          {principal.map((it) => (
-            <Enlace key={it.id} item={it} activo={esActivo(it, actual)} />
-          ))}
-          <Lente
-            item={principal.find((it) => esActivo(it, actual))}
-            escritorio={refraccion}
-          />
-        </nav>
-      </GlassSurface>
-      <GlassSurface
-        {...vidrio}
-        width={32}
-        height={32}
-        borderRadius={16}
-        style={{ overflow: "visible" }}
-      >
+        {principal.map((it) => (
+          <Enlace key={it.id} item={it} activo={esActivo(it, actual)} />
+        ))}
+        <span aria-hidden className="mx-1 h-6 w-px bg-border" />
         <MenuUsuario usuario={usuario} admin={admin} salir={salir} />
-      </GlassSurface>
+      </nav>
     </div>
   );
 }

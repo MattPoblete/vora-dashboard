@@ -1,6 +1,6 @@
 "use client";
 
-import { Glass } from "@/components/glass";
+import { Panel } from "@/components/panel";
 
 // unexpected errors in any screen; the details stay in the server log, matched by the digest
 export default function Error({
@@ -15,7 +15,7 @@ export default function Error({
   return (
     <main className="relative flex min-h-screen items-center justify-center px-4 text-text">
       <div className="relative w-full max-w-md">
-        <Glass title="Algo salió mal">
+        <Panel title="Algo salió mal">
           <p className="mb-6 text-lg">
             No se pudo completar la acción. Intenta de nuevo; si sigue pasando,
             avísale a un administrador
@@ -33,7 +33,7 @@ export default function Error({
           >
             Reintentar
           </button>
-        </Glass>
+        </Panel>
       </div>
     </main>
   );

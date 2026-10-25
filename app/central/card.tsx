@@ -5,7 +5,7 @@ import {
   type Campo,
   type Tarjeta,
 } from "@/lib/central";
-import { Glass } from "@/components/glass";
+import { Panel } from "@/components/panel";
 import { Tiempo } from "@/components/tiempo";
 import { Step } from "@/components/Stepper";
 import {
@@ -79,12 +79,12 @@ export function Card({ t }: { t: Tarjeta }) {
       .join(" · ");
 
   return (
-    <Glass
-      vidrio={false}
+    <Panel
+      plano
       id={`cliente-${cid}`}
       className="scroll-mt-6 transition-shadow"
     >
-      <header className="flex flex-wrap items-start justify-between gap-3">
+      <header className="flex flex-wrap items-start justify-between gap-3 pr-10">
         <div>
           <h2 className="text-2xl font-semibold">{t.cliente.nombre}</h2>
           <p className="text-sm text-muted">
@@ -331,6 +331,6 @@ export function Card({ t }: { t: Tarjeta }) {
           </Step>
         </PasosCentral>
       </div>
-    </Glass>
+    </Panel>
   );
 }

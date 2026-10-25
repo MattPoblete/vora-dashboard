@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Glass } from "@/components/glass";
+import { Panel } from "@/components/panel";
 import {
   estadoTexto,
   historia,
@@ -90,7 +90,7 @@ export async function Auditoria({ p }: { p: ParamsAuditoria }) {
         </p>
       </form>
 
-      <Glass
+      <Panel
         title={`Pedidos${q ? " encontrados" : ""} · ${filas.length}${hayMas ? "+" : ""}`}
       >
         {filas.length === 0 ? (
@@ -250,7 +250,7 @@ export async function Auditoria({ p }: { p: ParamsAuditoria }) {
             )}
           </nav>
         )}
-      </Glass>
+      </Panel>
     </div>
   );
 }

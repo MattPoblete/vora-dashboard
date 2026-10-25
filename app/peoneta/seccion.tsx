@@ -1,4 +1,4 @@
-import { Glass } from "@/components/glass";
+import { Panel } from "@/components/panel";
 import type { PaqueteD } from "@/lib/despacho";
 import { Boton, Form } from "../central/form";
 import { marcarEnviado } from "./actions";
@@ -16,7 +16,7 @@ export function Seccion({
   tono: string;
 }) {
   return (
-    <Glass>
+    <Panel>
       <Form action={marcarEnviado}>
         <fieldset>
           <legend className="sr-only">{titulo}</legend>
@@ -64,6 +64,6 @@ export function Seccion({
           </Boton>
         </fieldset>
       </Form>
-    </Glass>
+    </Panel>
   );
 }

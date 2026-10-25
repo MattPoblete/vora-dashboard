@@ -2,7 +2,7 @@
 
 import { startTransition, useActionState, useRef, useState } from "react";
 import { PANTALLAS } from "@/lib/permisos";
-import { Glass } from "@/components/glass";
+import { Panel } from "@/components/panel";
 import { crearUsuario, type CrearEstado } from "./actions";
 import { copiarTexto } from "@/lib/portapapeles";
 
@@ -30,7 +30,7 @@ export function CrearUsuario() {
         + Nuevo usuario
       </summary>
       <div className="mt-4 max-w-2xl">
-        <Glass title="Nuevo usuario">
+        <Panel title="Nuevo usuario">
           <form
             ref={form}
             className="space-y-3"
@@ -117,7 +117,7 @@ export function CrearUsuario() {
               </div>
             </div>
           )}
-        </Glass>
+        </Panel>
       </div>
     </details>
   );

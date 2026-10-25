@@ -4,7 +4,7 @@ import { db, requirePermiso } from "@/lib/session";
 import { COURIERS } from "@/lib/central";
 import { cargarDespacho } from "@/lib/despacho";
 import { COLOR_COURIER } from "@/lib/empaque";
-import { Glass } from "@/components/glass";
+import { Panel } from "@/components/panel";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { Seccion } from "./seccion";
 
@@ -14,11 +14,11 @@ async function Tablero() {
   const paquetes = await db((q) => cargarDespacho(q));
   if (!paquetes.length)
     return (
-      <Glass>
+      <Panel>
         <p className="py-10 text-center text-xl text-muted">
           No hay paquetes por despachar.
         </p>
-      </Glass>
+      </Panel>
     );
   return (
     <div className="space-y-5">

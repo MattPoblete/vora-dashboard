@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Glass } from "@/components/glass";
+import { Panel } from "@/components/panel";
 import { Tiempo } from "@/components/tiempo";
 import {
   lineasEtiqueta,
@@ -12,12 +12,12 @@ import { marcarEmpaquetado } from "./actions";
 
 export function Card({ p }: { p: Paquete }) {
   return (
-    <Glass
-      vidrio={false}
+    <Panel
+      plano
       id={`pedido-${p.pedido}`}
       className="scroll-mt-6 transition-shadow"
     >
-      <header className="flex flex-wrap items-start justify-between gap-3">
+      <header className="flex flex-wrap items-start justify-between gap-3 pr-10">
         <div>
           <h2 className="text-2xl font-semibold">{p.cliente}</h2>
           <p className="text-sm text-muted">
@@ -89,6 +89,6 @@ export function Card({ p }: { p: Paquete }) {
           </Boton>
         </Form>
       </div>
-    </Glass>
+    </Panel>
   );
 }

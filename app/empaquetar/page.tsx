@@ -3,7 +3,7 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { db, requirePermiso } from "@/lib/session";
 import { cargarEmpaque } from "@/lib/empaque";
-import { Glass } from "@/components/glass";
+import { Panel } from "@/components/panel";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { Cola, type ItemCola } from "@/components/cola";
 import { COLOR_COURIER, nombreCourier } from "@/lib/empaque";
@@ -16,11 +16,11 @@ async function Tablero({ params }: { params: Promise<{ abrir?: string }> }) {
   const paquetes = await db((q) => cargarEmpaque(q));
   if (!paquetes.length)
     return (
-      <Glass>
+      <Panel>
         <p className="py-10 text-center text-xl text-muted">
           Nada por empaquetar. Aparecerá acá cuando central lo libere.
         </p>
-      </Glass>
+      </Panel>
     );
   const items: ItemCola[] = paquetes.map((p) => ({
     anchor: `pedido-${p.pedido}`,
@@ -57,20 +57,19 @@ async function Tablero({ params }: { params: Promise<{ abrir?: string }> }) {
           🖨 Imprimir todas las etiquetas ({paquetes.length})
         </Link>
       </div>
-      <Glass
+      <Panel
         title={`Cola de empaquetado · ${items.length}`}
         className="p-3! sm:p-6!"
       >
         <Cola
           items={items}
           detalles={detalles}
-          ayuda="La carta de adelante es el pedido que lleva más tiempo esperando. Haz clic en una para abrir el pedido completo; arrastra la de adelante para ver la siguiente."
           resumen={Object.entries(porCourier).map(([nombre, n]) => ({
             nombre,
             n,
           }))}
         />
-      </Glass>
+      </Panel>
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { Glass } from "@/components/glass";
+import { Panel } from "@/components/panel";
 import { nombreGrupo, type Grupo } from "@/lib/grupos";
 import { db } from "@/lib/session";
 import { Boton, Form } from "../central/form";
@@ -64,7 +64,7 @@ export async function Grupos() {
 
   return (
     <div className="space-y-6">
-      <Glass title="Nuevo grupo de venta">
+      <Panel title="Nuevo grupo de venta">
         <p className="mb-4 text-sm text-muted">
           Marca a los 2 vendedores de la pareja. Si alguno ya estaba en otro
           grupo, pasa a este.
@@ -90,7 +90,7 @@ export async function Grupos() {
             Crear grupo
           </Boton>
         </Form>
-      </Glass>
+      </Panel>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {grupos.map((g) => {
@@ -100,7 +100,7 @@ export async function Grupos() {
           return (
             <article
               key={g.vendedores}
-              className="overflow-hidden rounded-3xl border border-border bg-surface"
+              className="overflow-hidden rounded-xl border border-border bg-surface"
             >
               <div
                 className="relative flex h-40 items-end bg-surface-2 bg-cover bg-center p-4"

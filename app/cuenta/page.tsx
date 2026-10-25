@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import { Glass } from "@/components/glass";
+import { Panel } from "@/components/panel";
 import { getPerfil } from "@/lib/perfil";
 import { getSession } from "@/lib/session";
 import { Boton, Form } from "../central/form";
@@ -18,14 +18,14 @@ async function Contenido() {
   // a temporary password blocks everything else: only the change form shows
   if (s.debeCambiar)
     return (
-      <Glass title="Elige tu contraseña">
+      <Panel title="Elige tu contraseña">
         <FormularioPassword usuario={s.usuario} temporal />
-      </Glass>
+      </Panel>
     );
 
   return (
     <div className="space-y-6">
-      <Glass title="Ajustes del perfil">
+      <Panel title="Ajustes del perfil">
         <Form action={guardarPerfil} mostrarOk className="space-y-4">
           {/* key: after saving, React keeps the old uncontrolled values; remounting shows what was stored */}
           <div
@@ -101,9 +101,9 @@ async function Contenido() {
             Guardar cambios
           </Boton>
         </Form>
-      </Glass>
+      </Panel>
 
-      <Glass title="Contraseña">
+      <Panel title="Contraseña">
         {/* native <details>: opens the change form only when asked */}
         <details>
           <summary className="inline-block cursor-pointer list-none rounded-xl border border-border bg-surface-2 px-4 py-2 font-medium hover:bg-border">
@@ -113,7 +113,7 @@ async function Contenido() {
             <FormularioPassword usuario={s.usuario} />
           </div>
         </details>
-      </Glass>
+      </Panel>
     </div>
   );
 }

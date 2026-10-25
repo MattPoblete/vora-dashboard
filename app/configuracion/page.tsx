@@ -1,12 +1,6 @@
 import { Suspense } from "react";
 import { connection } from "next/server";
-import { Glass } from "@/components/glass";
-import {
-  BankIcon,
-  TimeQuarterPassIcon,
-  UserGroupIcon,
-  UserMultiple02Icon,
-} from "@hugeicons/core-free-icons";
+import { Panel } from "@/components/panel";
 import { Pestanas } from "@/components/pestanas";
 import { transferencia } from "@/lib/mensajes";
 import { PANTALLAS, esPermiso, type Permiso } from "@/lib/permisos";
@@ -19,10 +13,10 @@ import { Registro } from "./registro";
 import { Restablecer } from "./restablecer";
 
 const TABS = [
-  { id: "usuarios", label: "Usuarios", icono: UserGroupIcon },
-  { id: "grupos", label: "Grupos de venta", icono: UserMultiple02Icon },
-  { id: "transferencia", label: "Transferencia", icono: BankIcon },
-  { id: "registro", label: "Registro", icono: TimeQuarterPassIcon },
+  { id: "usuarios", label: "Usuarios" },
+  { id: "grupos", label: "Grupos de venta" },
+  { id: "transferencia", label: "Transferencia" },
+  { id: "registro", label: "Registro" },
 ] as const;
 type Tab = (typeof TABS)[number]["id"];
 
@@ -50,7 +44,7 @@ async function Usuarios({ yoId }: { yoId: number }) {
   return (
     <>
       <CrearUsuario />
-      <Glass title={`Usuarios · ${usuarios.length}`}>
+      <Panel title={`Usuarios · ${usuarios.length}`}>
         <ul className="divide-y divide-border">
           {usuarios.map((u) => {
             const propios = u.permisos.filter(esPermiso) as Permiso[];
@@ -187,7 +181,7 @@ async function Usuarios({ yoId }: { yoId: number }) {
             );
           })}
         </ul>
-      </Glass>
+      </Panel>
     </>
   );
 }
@@ -205,7 +199,7 @@ function Transferencia() {
   ];
   return (
     <div className="max-w-2xl">
-      <Glass title="Datos de transferencia">
+      <Panel title="Datos de transferencia">
         <p className="mb-4 text-sm text-muted">
           Es lo que central envía a los clientes en el mensaje de transferencia.
           Se lee del archivo <code>.env</code>: para cambiarlo, edita las
@@ -227,7 +221,7 @@ function Transferencia() {
             );
           })}
         </dl>
-      </Glass>
+      </Panel>
     </div>
   );
 }

@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { connection } from "next/server";
 import { db, requirePermiso } from "@/lib/session";
 import { cargar } from "@/lib/central";
-import { Glass } from "@/components/glass";
+import { Panel } from "@/components/panel";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { Cola, type ItemCola } from "@/components/cola";
 import { Card, estadoTarjeta } from "./card";
@@ -14,12 +14,12 @@ async function Tablero({ params }: { params: Promise<{ abrir?: string }> }) {
   const tarjetas = await db((q) => cargar(q));
   if (!tarjetas.length)
     return (
-      <Glass>
+      <Panel>
         <p className="py-10 text-center text-xl text-muted">
           Sin ventas pendientes 🎉 Aparecerán acá apenas los vendedores las
           registren.
         </p>
-      </Glass>
+      </Panel>
     );
   const clp = (n: number) => "$" + n.toLocaleString("es-CL");
   const items: ItemCola[] = tarjetas.map((t) => {
@@ -60,17 +60,16 @@ async function Tablero({ params }: { params: Promise<{ abrir?: string }> }) {
       }
     : {};
   return (
-    <Glass title={`Cola de pedidos · ${items.length}`} className="p-3! sm:p-6!">
+    <Panel title={`Cola de pedidos · ${items.length}`} className="p-3! sm:p-6!">
       <Cola
         items={items}
         detalles={detalles}
-        ayuda="La carta de adelante es el pedido más antiguo. Haz clic en una para abrir el pedido completo; arrastra la de adelante para ver la siguiente."
         resumen={Object.entries(porEstado).map(([nombre, n]) => ({
           nombre,
           n,
         }))}
       />
-    </Glass>
+    </Panel>
   );
 }
 

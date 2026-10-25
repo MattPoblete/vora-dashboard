@@ -1,45 +1,35 @@
-"use client";
+import Link from "next/link";
+import type { ReactNode } from "react";
 
-import MagicBento, { type MagicBentoItem } from "./MagicBento";
+export type ItemBento = {
+  id: string;
+  content: ReactNode;
+  colSpan?: 1 | 2;
+  href?: string;
+};
 
-// MagicBento ships fixed dark/light palettes; these overrides (the `style` prop wins over its own) point every
-// color at the app tokens, so the cards follow docs/styles.md in both themes.
-const TEMA = {
-  "--mb-surface": "var(--surface)",
-  "--mb-edge": "var(--border)",
-  "--mb-highlight": "transparent",
-  "--mb-shadow":
-    "0 14px 30px -22px color-mix(in srgb, var(--text) 45%, transparent)",
-  "--mb-tile": "var(--surface-2)",
-  "--mb-tile-edge": "var(--border)",
-  "--mb-tile-highlight": "transparent",
-  "--mb-tile-shadow": "none",
-  "--mb-well": "var(--surface-2)",
-  "--mb-well-edge": "var(--border)",
-  "--mb-ink": "var(--text)",
-  "--mb-muted": "var(--text-muted)",
-  "--mb-faint": "var(--text-muted)",
-  "--mb-line": "var(--border)",
-  "--mb-secondary": "var(--text-muted)",
-  "--mb-secondary-ink": "var(--surface)",
-  "--mb-ring": "var(--surface)",
-  "--mb-focus": "var(--primary)",
-  "--mb-glow-rgb": "var(--primary-rgb)",
-  "--mb-accent-rgb": "var(--primary-rgb)",
-  "--mb-accent-ink": "var(--on-primary)",
-  "--mb-glow-alpha": 0.6,
-  "--mb-spot-alpha": 0.06,
-} as React.CSSProperties;
+const caja = "flex flex-col rounded-xl border border-border bg-surface p-5 shadow-sm";
 
-export function Bento({ items }: { items: MagicBentoItem[] }) {
+// 2 columns on a phone (the KPIs pair up), 4 on a wide screen; wide cards take 2. Heights follow the content.
+export function Bento({ items }: { items: ItemBento[] }) {
   return (
-    <MagicBento
-      items={items}
-      columns={4}
-      rowHeight={150}
-      gap={16}
-      radius={24}
-      style={TEMA}
-    />
+    <div className="grid grid-flow-row-dense grid-cols-2 gap-4 lg:grid-cols-4">
+      {items.map((it) => {
+        const clase = `${caja} ${it.colSpan === 2 ? "col-span-2" : ""}`;
+        return it.href ? (
+          <Link
+            key={it.id}
+            href={it.href}
+            className={`${clase} transition-colors hover:border-primary`}
+          >
+            {it.content}
+          </Link>
+        ) : (
+          <div key={it.id} className={clase}>
+            {it.content}
+          </div>
+        );
+      })}
+    </div>
   );
 }

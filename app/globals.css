@@ -14,8 +14,6 @@
   --primary-hover: #a63a18;
   --primary-soft: #f8e3d6;
   --on-primary: #ffffff; /* not in the doc: readable text on the primary button */
-  --primary-rgb:
-    194, 71, 31; /* same color as --primary, as channels: MagicBento builds its lights with rgba() */
   --secondary: #f2b266;
   --success: #3f8f6b;
   --warning: #d9a23b;
@@ -37,7 +35,6 @@
     --primary-hover: #f39363;
     --primary-soft: #3a2622;
     --on-primary: #15131f;
-    --primary-rgb: 238, 122, 69;
   }
 }
 
@@ -53,7 +50,6 @@
   --primary-hover: #f39363;
   --primary-soft: #3a2622;
   --on-primary: #15131f;
-  --primary-rgb: 238, 122, 69;
 }
 
 @theme inline {
@@ -85,36 +81,6 @@
 
 body {
   color: var(--text);
+  background: var(--bg);
   font-family: Arial, Helvetica, sans-serif;
-  /* a very soft, static wash of the brand colors: it gives the frosted glass something to blur
-     without competing with the content (orange stays well under 10% of the screen) */
-  background:
-    radial-gradient(
-      900px 520px at 8% -8%,
-      color-mix(in srgb, var(--secondary) 16%, transparent),
-      transparent
-    ),
-    radial-gradient(
-      760px 480px at 100% 0%,
-      color-mix(in srgb, var(--primary) 9%, transparent),
-      transparent
-    ),
-    var(--bg);
-  background-attachment: fixed;
-}
-
-/* CardSwap ships its own dark/light themes inline; pin its tiles to the app tokens instead */
-.cola-swap .card-swap {
-  --swap-tile: var(--surface) !important;
-  --swap-tile-edge: var(--border) !important;
-  --swap-tile-highlight: color-mix(
-    in srgb,
-    var(--text) 10%,
-    transparent
-  ) !important;
-  --swap-ink: var(--text) !important;
-  --swap-shade: var(--bg) !important;
-  --swap-badge: color-mix(in srgb, var(--text) 8%, transparent) !important;
-  --swap-shadow:
-    0 24px 48px -26px rgb(0 0 0 / 0.55), 0 8px 18px -12px rgb(0 0 0 / 0.35) !important;
 }

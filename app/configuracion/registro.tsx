@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Glass } from "@/components/glass";
+import { Panel } from "@/components/panel";
 import { db } from "@/lib/session";
 
 type Cambio = { antes: unknown; despues: unknown };
@@ -109,7 +109,7 @@ export async function Registro({ tabla }: { tabla: string }) {
           </Link>
         ))}
       </nav>
-      <Glass title={`Últimos movimientos · ${filas.length}`}>
+      <Panel title={`Últimos movimientos · ${filas.length}`}>
         {filas.length === 0 ? (
           <p className="text-muted">Aún no hay movimientos registrados.</p>
         ) : (
@@ -152,7 +152,7 @@ export async function Registro({ tabla }: { tabla: string }) {
             </table>
           </div>
         )}
-      </Glass>
+      </Panel>
     </div>
   );
 }

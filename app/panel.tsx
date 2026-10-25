@@ -10,7 +10,7 @@ import {
   ShoppingBag01Icon,
   Wallet01Icon,
 } from "@hugeicons/core-free-icons";
-import type { MagicBentoItem } from "@/components/MagicBento";
+import type { ItemBento } from "@/components/bento";
 import { COURIERS } from "@/lib/central";
 import type { Dia, Fila } from "@/lib/estadisticas";
 
@@ -55,11 +55,9 @@ function Tarjeta({
 }) {
   return (
     <>
-      <div className="magic-bento__header">
-        <span className="magic-bento__icon">
-          <HugeiconsIcon icon={ICONOS[icono]} size={16} strokeWidth={1.8} />
-        </span>
-        <span className="magic-bento__label">{label}</span>
+      <div className="flex items-center gap-2 text-sm text-muted">
+        <HugeiconsIcon icon={ICONOS[icono]} size={16} strokeWidth={1.8} />
+        <span>{label}</span>
       </div>
       {children}
     </>
@@ -72,30 +70,22 @@ export function kpi(
   label: string,
   valor: string,
   nota?: string,
-): MagicBentoItem {
+): ItemBento {
   return {
     id: label,
     content: (
       <Tarjeta icono={icono} label={label}>
-        <div className="mt-auto">
-          <p className="text-3xl font-semibold tabular-nums leading-none">
-            {valor}
-          </p>
-          {nota && (
-            <p className="magic-bento__description mt-2 truncate">{nota}</p>
-          )}
-        </div>
+        <p className="mt-3 text-3xl font-semibold tabular-nums leading-none">
+          {valor}
+        </p>
+        {nota && <p className="mt-1.5 truncate text-sm text-muted">{nota}</p>}
       </Tarjeta>
     ),
   };
 }
 
-// last 7 days as bars; the peak day is the solid one
-export function serie(
-  label: string,
-  dias: Dia[],
-  total: string,
-): MagicBentoItem {
+// last 7 days as bars, the day under each one; the peak day is the solid one, empty days draw nothing
+export function serie(label: string, dias: Dia[], total: string): ItemBento {
   const max = Math.max(...dias.map((d) => d.n), 1);
   const pico = Math.max(...dias.map((d) => d.n));
   return {
@@ -103,31 +93,28 @@ export function serie(
     colSpan: 2,
     content: (
       <Tarjeta icono="serie" label={label}>
-        <div className="magic-bento__visual">
-          <div className="magic-bento__bars">
-            <div className="magic-bento__figure">
-              <span className="magic-bento__figure-value">{total}</span>
-              <span className="magic-bento__figure-note">últimos 7 días</span>
-            </div>
-            <div className="magic-bento__bars-plot">
-              {dias.map((d, i) => (
-                <span
-                  key={d.dia}
-                  title={`${d.dia}: ${d.n}`}
-                  className="magic-bento__bar"
-                  data-peak={d.n === pico && pico > 0 ? "" : undefined}
-                  style={{ "--h": d.n / max, "--i": i } as React.CSSProperties}
-                />
-              ))}
-            </div>
-            <div className="mt-1 flex gap-[5px] text-[10px] text-[var(--mb-muted)]">
-              {dias.map((d) => (
-                <span key={d.dia} className="flex-1 text-center tabular-nums">
-                  {d.n}
-                </span>
-              ))}
-            </div>
-          </div>
+        <p className="mt-3 text-sm text-muted">
+          <span className="text-xl font-semibold tabular-nums text-text">
+            {total}
+          </span>{" "}
+          últimos 7 días
+        </p>
+        <div className="mt-4 flex h-20 items-end gap-2">
+          {dias.map((d) => (
+            <div
+              key={d.dia}
+              title={`${d.dia}: ${d.n}`}
+              className={`flex-1 rounded-t ${d.n === pico && pico > 0 ? "bg-primary" : "bg-primary-soft"}`}
+              style={{ height: `${(d.n / max) * 100}%` }}
+            />
+          ))}
+        </div>
+        <div className="mt-1.5 flex gap-2 border-t border-border pt-1.5 text-[11px] text-muted">
+          {dias.map((d) => (
+            <span key={d.dia} className="flex-1 text-center tabular-nums">
+              {d.dia}
+            </span>
+          ))}
         </div>
       </Tarjeta>
     ),
@@ -139,34 +126,31 @@ export function lista(
   icono: Icono,
   label: string,
   filas: Fila[],
-  opts: { nombre?: (k: string) => string; vacio?: string; span?: number } = {},
-): MagicBentoItem {
+  opts: { nombre?: (k: string) => string; vacio?: string } = {},
+): ItemBento {
   const max = Math.max(...filas.map((f) => f.v), 1);
   return {
     id: label,
-    colSpan: opts.span ?? 2,
-    rowSpan: filas.length > 3 ? 2 : 1, // four or more rows do not fit one 150px row
+    colSpan: 2,
     content: (
       <Tarjeta icono={icono} label={label}>
         {filas.length === 0 ? (
-          <p className="magic-bento__description my-auto">
+          <p className="mt-3 text-sm text-muted">
             {opts.vacio ?? "Sin datos todavía."}
           </p>
         ) : (
-          <ul className="mt-auto space-y-2">
+          <ul className="mt-4 space-y-3">
             {filas.map((f) => (
               <li key={f.k}>
-                <div className="flex justify-between text-[13px] leading-4">
+                <div className="flex justify-between text-sm">
                   <span className="truncate first-letter:uppercase">
                     {opts.nombre ? opts.nombre(f.k) : f.k}
                   </span>
-                  <span className="tabular-nums text-[var(--mb-muted)]">
-                    {num(f.v)}
-                  </span>
+                  <span className="tabular-nums text-muted">{num(f.v)}</span>
                 </div>
-                <div className="mt-1 h-1 rounded-full bg-[var(--mb-line)]">
+                <div className="mt-1 h-1.5 rounded-full bg-surface-2">
                   <div
-                    className="h-1 rounded-full bg-[rgb(var(--mb-accent-rgb))]"
+                    className="h-1.5 rounded-full bg-primary"
                     style={{ width: `${(f.v / max) * 100}%` }}
                   />
                 </div>
@@ -180,15 +164,14 @@ export function lista(
 }
 
 // a card that is a link to the work screen
-export function ir(href: string, label: string): MagicBentoItem {
+export function ir(href: string, label: string): ItemBento {
   return {
     id: href,
     href,
-    // fills the whole card (the negative margin cancels MagicBento's padding) in the accent color, so it reads as the action
     content: (
-      <div className="-m-[var(--mb-pad)] flex flex-1 flex-col justify-between bg-primary p-[var(--mb-pad)] text-on-primary transition-colors hover:bg-primary-hover">
+      <div className="flex flex-1 items-center justify-between gap-3 font-semibold text-primary">
+        {label}
         <HugeiconsIcon icon={ICONOS.ir} size={20} strokeWidth={2} />
-        <p className="text-lg font-semibold leading-tight">{label}</p>
       </div>
     ),
   };

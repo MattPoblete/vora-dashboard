@@ -10,17 +10,8 @@ import {
   estadEmpaque,
   estadVentas,
 } from "@/lib/estadisticas";
-import {
-  DashboardSquare01Icon,
-  DeliveryTruck01Icon,
-  FileSearchIcon,
-  Package01Icon,
-  ShoppingBag01Icon,
-  Wallet01Icon,
-} from "@hugeicons/core-free-icons";
 import { Pestanas } from "@/components/pestanas";
-import { Bento } from "@/components/bento";
-import type { MagicBentoItem } from "@/components/MagicBento";
+import { Bento, type ItemBento } from "@/components/bento";
 import { clp, courier, hace, ir, kpi, lista, num, serie } from "./panel";
 import { Auditoria, type ParamsAuditoria } from "./auditoria";
 
@@ -40,7 +31,7 @@ const estado = (k: string) => ESTADOS[k] ?? k.replaceAll("_", " ");
 const suma = (d: { n: number }[]) => num(d.reduce((a, x) => a + x.n, 0));
 
 // one loader per role: each returns the cards for that part of the operation
-const PANELES: Record<Pantalla, (q: Sql) => Promise<MagicBentoItem[]>> = {
+const PANELES: Record<Pantalla, (q: Sql) => Promise<ItemBento[]>> = {
   async ventas(q) {
     const { hoy, live, semana, materiales } = await estadVentas(q);
     return [
@@ -109,7 +100,7 @@ const PANELES: Record<Pantalla, (q: Sql) => Promise<MagicBentoItem[]>> = {
   },
 };
 
-async function cargarAdmin(q: Sql): Promise<MagicBentoItem[]> {
+async function cargarAdmin(q: Sql): Promise<ItemBento[]> {
   const { t, lives, estados, parejas, clientes, semana } = await estadAdmin(q);
   return [
     kpi("ventas", "Ventas", num(t.ventas)),
@@ -128,15 +119,6 @@ async function cargarAdmin(q: Sql): Promise<MagicBentoItem[]> {
 }
 
 type Tab = "resumen" | "auditoria" | Pantalla;
-// same icons as the dock (components/dock.tsx) for the screens both show
-const ICONOS: Record<Tab, typeof DashboardSquare01Icon> = {
-  resumen: DashboardSquare01Icon,
-  auditoria: FileSearchIcon,
-  ventas: ShoppingBag01Icon,
-  central: Wallet01Icon,
-  empaquetado: Package01Icon,
-  despacho: DeliveryTruck01Icon,
-};
 type Params = { tab?: string } & ParamsAuditoria;
 
 // one tab per role the user holds; the admin also gets the general summary and the order audit first (and can look at
@@ -172,7 +154,6 @@ async function Paneles({ params }: { params: Promise<Params> }) {
           tabs={tabs.map((t) => ({
             ...t,
             href: `/?tab=${t.id}`,
-            icono: ICONOS[t.id],
           }))}
         />
       )}
@@ -180,8 +161,7 @@ async function Paneles({ params }: { params: Promise<Params> }) {
         {actual.id === "auditoria" ? (
           <Auditoria p={p} />
         ) : (
-          // key: switching tabs remounts the grid, so the intro animation plays for the new cards
-          <Bento key={actual.id} items={items} />
+          <Bento items={items} />
         )}
       </div>
     </>
