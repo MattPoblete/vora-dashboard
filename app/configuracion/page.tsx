@@ -15,6 +15,7 @@ import { Boton, Form } from "../central/form";
 import { guardarUsuario } from "./actions";
 import { CrearUsuario } from "./crear";
 import { Grupos } from "./grupos";
+import { leerBusqueda } from "@/lib/busqueda";
 import { Registro } from "./registro";
 import { Restablecer } from "./restablecer";
 
@@ -236,11 +237,13 @@ function Transferencia() {
 async function Contenido({
   params,
 }: {
-  params: Promise<{ tab?: string; t?: string }>;
+  params: Promise<{ tab?: string; t?: string; q?: string }>;
 }) {
   await connection();
   const yo = await requirePermiso(); // admin only
-  const { tab: pedida, t } = await params;
+  const p = await params;
+  const { tab: pedida, t } = p;
+  const { q } = leerBusqueda(p);
   const tab: Tab = TABS.some((t) => t.id === pedida)
     ? (pedida as Tab)
     : "usuarios";
@@ -256,7 +259,7 @@ async function Contenido({
         {tab === "usuarios" && <Usuarios yoId={yo.usuarioId} />}
         {tab === "grupos" && <Grupos />}
         {tab === "transferencia" && <Transferencia />}
-        {tab === "registro" && <Registro tabla={t ?? ""} />}
+        {tab === "registro" && <Registro tabla={t ?? ""} q={q} />}
       </div>
     </>
   );
@@ -278,7 +281,13 @@ export default function Page(props: PageProps<"/configuracion">) {
           fallback={<p className="text-center text-muted">Cargando…</p>}
         >
           <Contenido
-            params={props.searchParams as Promise<{ tab?: string; t?: string }>}
+            params={
+              props.searchParams as Promise<{
+                tab?: string;
+                t?: string;
+                q?: string;
+              }>
+            }
           />
         </Suspense>
       </div>

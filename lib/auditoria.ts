@@ -1,4 +1,5 @@
 import type { Fragment, Sql } from "postgres";
+import { patron } from "./busqueda.ts";
 import { COURIERS, fono } from "./central.ts";
 
 // Auditoría tab (admin summary): one row per order with everything that happened to it, read from `registro`.
@@ -27,7 +28,7 @@ export const ORDENES = ["cambio", "pedido", "cliente", "total"] as const;
 export type Orden = (typeof ORDENES)[number];
 export const POR_PAGINA = 50;
 
-const like = (s: string) => "%" + s.replace(/[%_\\]/g, "\\$&") + "%";
+const like = patron;
 
 // every registro row tied to the order(s) it belongs to: (registro columns..., pedido_id, codigo)
 // ponytail: rebuilt from the whole log on every query; fine for years of a boutique's volume,

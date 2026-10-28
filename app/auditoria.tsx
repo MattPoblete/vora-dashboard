@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Glass } from "@/components/glass";
+import { Buscador } from "@/components/buscador";
 import {
   estadoTexto,
   historia,
@@ -9,6 +10,7 @@ import {
   parseBusqueda,
   type Orden,
 } from "@/lib/auditoria";
+import { leerBusqueda } from "@/lib/busqueda";
 import { fono } from "@/lib/central";
 import { db } from "@/lib/session";
 import { clp } from "./panel";
@@ -43,7 +45,7 @@ const COLUMNAS: { id: Orden | null; label: string }[] = [
 
 // admin only (the summary page only offers this tab to admins); everything lives in the URL, so a search is a link
 export async function Auditoria({ p }: { p: ParamsAuditoria }) {
-  const q = (p.q ?? "").slice(0, 200);
+  const { q } = leerBusqueda(p, [], 200);
   const orden = ORDENES.find((o) => o === p.orden) ?? "cambio";
   const asc = p.dir === "asc";
   const pagina = Math.max(1, Math.floor(Number(p.pagina)) || 1);
@@ -73,22 +75,17 @@ export async function Auditoria({ p }: { p: ParamsAuditoria }) {
 
   return (
     <div className="space-y-4">
-      <form action="/" className="space-y-1">
-        <input type="hidden" name="tab" value="auditoria" />
-        <input
-          type="search"
-          name="q"
-          defaultValue={q}
+      <div className="space-y-1">
+        <Buscador
           placeholder="Busca por pedido, cliente, teléfono o usuario…"
-          aria-label="Buscar pedidos"
-          className="h-12 w-full rounded-2xl border border-border bg-surface-2 px-4 text-base outline-none focus:border-primary"
+          reiniciar={["pagina", "ver"]}
         />
         <p className="px-1 text-xs text-muted">
           Combina filtros: <code>pedido:128</code> <code>cliente:cami</code>{" "}
           <code>usuario:maria</code> <code>estado:pagada</code>. Usa comillas
           para frases: <code>cliente:&quot;cami rojas&quot;</code>
         </p>
-      </form>
+      </div>
 
       <Glass
         title={`Pedidos${q ? " encontrados" : ""} · ${filas.length}${hayMas ? "+" : ""}`}

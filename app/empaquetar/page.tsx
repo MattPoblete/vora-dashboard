@@ -4,23 +4,35 @@ import { connection } from "next/server";
 import { db, requirePermiso } from "@/lib/session";
 import { cargarEmpaque } from "@/lib/empaque";
 import { Glass } from "@/components/glass";
+import { Buscador } from "@/components/buscador";
+import { leerBusqueda } from "@/lib/busqueda";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { Cola, type ItemCola } from "@/components/cola";
 import { COLOR_COURIER, nombreCourier } from "@/lib/empaque";
 import { Card } from "./card";
 
-async function Tablero({ params }: { params: Promise<{ abrir?: string }> }) {
+const PLACEHOLDER = "Buscar cliente, teléfono, pedido o número de venta…";
+type Params = { abrir?: string; q?: string };
+
+async function Tablero({ params }: { params: Promise<Params> }) {
   await connection();
-  const { abrir } = await params;
+  const p = await params;
+  const { abrir } = p;
+  const { q } = leerBusqueda(p);
   await requirePermiso("empaquetado");
-  const paquetes = await db((q) => cargarEmpaque(q));
+  const paquetes = await db((tx) => cargarEmpaque(tx, undefined, q));
   if (!paquetes.length)
     return (
-      <Glass>
-        <p className="py-10 text-center text-xl text-muted">
-          Nada por empaquetar. Aparecerá acá cuando central lo libere.
-        </p>
-      </Glass>
+      <>
+        {q && <Buscador placeholder={PLACEHOLDER} reiniciar={["abrir"]} />}
+        <Glass>
+          <p className="py-10 text-center text-xl text-muted">
+            {q
+              ? "Ningún pedido coincide con la búsqueda."
+              : "Nada por empaquetar. Aparecerá acá cuando central lo libere."}
+          </p>
+        </Glass>
+      </>
     );
   const items: ItemCola[] = paquetes.map((p) => ({
     anchor: `pedido-${p.pedido}`,
@@ -47,6 +59,7 @@ async function Tablero({ params }: { params: Promise<{ abrir?: string }> }) {
     : {};
   return (
     <>
+      <Buscador placeholder={PLACEHOLDER} reiniciar={["abrir"]} />
       <div className="mb-5 flex justify-end">
         <Link
           href={`/empaquetar/etiquetas?ids=${paquetes.map((p) => p.pedido).join(",")}`}
@@ -54,7 +67,7 @@ async function Tablero({ params }: { params: Promise<{ abrir?: string }> }) {
           target="_blank"
           className="rounded-full border border-border bg-surface-2 px-5 py-2 text-sm font-medium backdrop-blur-xl hover:bg-border"
         >
-          🖨 Imprimir todas las etiquetas ({paquetes.length})
+          🖨 Imprimir {q ? "estas" : "todas las"} etiquetas ({paquetes.length})
         </Link>
       </div>
       <Glass
@@ -91,7 +104,7 @@ export default function Page(props: PageProps<"/empaquetar">) {
         <Suspense
           fallback={<p className="text-center text-muted">Cargando…</p>}
         >
-          <Tablero params={props.searchParams as Promise<{ abrir?: string }>} />
+          <Tablero params={props.searchParams as Promise<Params>} />
         </Suspense>
       </div>
     </main>

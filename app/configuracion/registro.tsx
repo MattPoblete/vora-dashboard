@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { Glass } from "@/components/glass";
+import { Buscador } from "@/components/buscador";
+import { patron } from "@/lib/busqueda";
 import { db } from "@/lib/session";
 
 type Cambio = { antes: unknown; despues: unknown };
@@ -74,10 +76,13 @@ function Detalle({ f }: { f: Fila }) {
   );
 }
 
-export async function Registro({ tabla }: { tabla: string }) {
+export async function Registro({ tabla, q }: { tabla: string; q: string }) {
+  const like = patron(q);
+  const numero = patron(q.replace(/^#/, ""));
   const filtro = TABLAS.some((t) => t.id === tabla) ? tabla : "";
   const filas = await db(
-    (q) => q<Fila[]>`
+    (tx) => tx<Fila[]>`
+      select * from (
       select r.id, r.en, r.tabla, r.fila_id, r.accion, r.usuario, r.cambios,
              case r.tabla
                when 'clientes' then (select nombre from clientes where id = r.fila_id)
@@ -88,8 +93,15 @@ export async function Registro({ tabla }: { tabla: string }) {
                when 'ventas' then coalesce((select comprador_texto from ventas where id = r.fila_id), r.cambios->>'comprador_texto')
              end quien
       from registro r
-      ${filtro ? q`where r.tabla = ${filtro}` : q``}
-      order by r.id desc limit 100`,
+      ${filtro ? tx`where r.tabla = ${filtro}` : tx``}
+      ) x
+      ${
+        q
+          ? tx`where x.usuario ilike ${like} or x.quien ilike ${like} or x.fila_id::text ilike ${numero}
+                 or x.cambios::text ilike ${like}`
+          : tx``
+      }
+      order by x.id desc limit 100`,
   );
 
   return (
@@ -109,9 +121,14 @@ export async function Registro({ tabla }: { tabla: string }) {
           </Link>
         ))}
       </nav>
+      <Buscador placeholder="Buscar usuario, cliente, número o texto del cambio…" />
       <Glass title={`Últimos movimientos · ${filas.length}`}>
         {filas.length === 0 ? (
-          <p className="text-muted">Aún no hay movimientos registrados.</p>
+          <p className="text-muted">
+            {q
+              ? "Ningún movimiento coincide con la búsqueda."
+              : "Aún no hay movimientos registrados."}
+          </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[40rem] text-left text-sm">

@@ -3,23 +3,34 @@ import { connection } from "next/server";
 import { db, requirePermiso } from "@/lib/session";
 import { cargar } from "@/lib/central";
 import { Glass } from "@/components/glass";
+import { Buscador } from "@/components/buscador";
+import { leerBusqueda } from "@/lib/busqueda";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { Cola, type ItemCola } from "@/components/cola";
 import { Card, estadoTarjeta } from "./card";
 
-async function Tablero({ params }: { params: Promise<{ abrir?: string }> }) {
+const PLACEHOLDER = "Buscar cliente, teléfono o número de venta…";
+type Params = { abrir?: string; q?: string };
+
+async function Tablero({ params }: { params: Promise<Params> }) {
   await connection();
-  const { abrir } = await params;
+  const p = await params;
+  const { abrir } = p;
+  const { q } = leerBusqueda(p);
   await requirePermiso("central");
-  const tarjetas = await db((q) => cargar(q));
+  const tarjetas = await db((tx) => cargar(tx, undefined, q));
   if (!tarjetas.length)
     return (
-      <Glass>
-        <p className="py-10 text-center text-xl text-muted">
-          Sin ventas pendientes 🎉 Aparecerán acá apenas los vendedores las
-          registren.
-        </p>
-      </Glass>
+      <>
+        {q && <Buscador placeholder={PLACEHOLDER} reiniciar={["abrir"]} />}
+        <Glass>
+          <p className="py-10 text-center text-xl text-muted">
+            {q
+              ? "Ningún pedido coincide con la búsqueda."
+              : "Sin ventas pendientes 🎉 Aparecerán acá apenas los vendedores las registren."}
+          </p>
+        </Glass>
+      </>
     );
   const clp = (n: number) => "$" + n.toLocaleString("es-CL");
   const items: ItemCola[] = tarjetas.map((t) => {
@@ -60,17 +71,23 @@ async function Tablero({ params }: { params: Promise<{ abrir?: string }> }) {
       }
     : {};
   return (
-    <Glass title={`Cola de pedidos · ${items.length}`} className="p-3! sm:p-6!">
-      <Cola
-        items={items}
-        detalles={detalles}
-        ayuda="La carta de adelante es el pedido más antiguo. Haz clic en una para abrir el pedido completo; arrastra la de adelante para ver la siguiente."
-        resumen={Object.entries(porEstado).map(([nombre, n]) => ({
-          nombre,
-          n,
-        }))}
-      />
-    </Glass>
+    <>
+      <Buscador placeholder={PLACEHOLDER} reiniciar={["abrir"]} />
+      <Glass
+        title={`Cola de pedidos · ${items.length}`}
+        className="p-3! sm:p-6!"
+      >
+        <Cola
+          items={items}
+          detalles={detalles}
+          ayuda="La carta de adelante es el pedido más antiguo. Haz clic en una para abrir el pedido completo; arrastra la de adelante para ver la siguiente."
+          resumen={Object.entries(porEstado).map(([nombre, n]) => ({
+            nombre,
+            n,
+          }))}
+        />
+      </Glass>
+    </>
   );
 }
 
@@ -90,7 +107,7 @@ export default function Page(props: PageProps<"/central">) {
         <Suspense
           fallback={<p className="text-center text-muted">Cargando…</p>}
         >
-          <Tablero params={props.searchParams as Promise<{ abrir?: string }>} />
+          <Tablero params={props.searchParams as Promise<Params>} />
         </Suspense>
       </div>
     </main>

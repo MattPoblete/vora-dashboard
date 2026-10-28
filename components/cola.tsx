@@ -80,17 +80,27 @@ export function Cola({
   const cierre = useRef<HTMLButtonElement>(null);
   const lista = items.slice(0, MAX);
 
+  // ?abrir= goes in and out without touching the rest of the url (the search box lives there too)
+  const irA = useCallback(
+    (anchor: string | null) => {
+      // the live url, not a hook value: a changing dependency would re-run the panel effect when ?abrir= lands
+      const next = new URLSearchParams(window.location.search);
+      if (anchor) next.set("abrir", anchor);
+      else next.delete("abrir");
+      const s = next.toString();
+      router.replace(s ? `${pathname}?${s}` : pathname, { scroll: false });
+    },
+    [router, pathname],
+  );
   const abrir = (anchor: string, desde?: Element | null) => {
     origen.current = desde?.getBoundingClientRect() ?? null;
     setAbierto(anchor);
-    router.replace(`${pathname}?abrir=${encodeURIComponent(anchor)}`, {
-      scroll: false,
-    });
+    irA(anchor);
   };
   const cerrar = useCallback(() => {
     setAbierto(null);
-    router.replace(pathname, { scroll: false });
-  }, [router, pathname]);
+    irA(null);
+  }, [irA]);
 
   useEffect(() => {
     if (!abierto) return;

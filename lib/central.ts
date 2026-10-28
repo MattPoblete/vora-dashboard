@@ -1,4 +1,5 @@
 import type postgres from "postgres";
+import { patron } from "./busqueda.ts"; // .ts: node --test loads this file through lib/auditoria.ts
 
 export type Courier = "starken" | "bluex" | "retiro_tienda";
 export const COURIERS: { id: Courier; label: string }[] = [
@@ -107,13 +108,24 @@ const PENDIENTE = ["reservada", "esperando_pago", "pagada"];
 export async function cargar(
   q: postgres.Sql,
   soloCliente?: number,
+  busqueda = "", // nick, name, phone or a sale number of the client; the whole card stays, only whole clients are filtered
 ): Promise<Tarjeta[]> {
+  const like = patron(busqueda);
+  const codigo = patron(busqueda.replace(/^#/, ""));
   const ventas = await q<(VentaB & { cliente_id: number })[]>`
     select v.id, v.codigo, coalesce(v.monto,0)::int monto, v.talla, v.material, v.detalle, v.estado::text,
            v.creado_en, v.cliente_id, coalesce(l.vendedores, l.nombre) live
     from ventas v join lives l on l.id = v.live_id
     where v.estado::text in ${q(PENDIENTE)} and v.cliente_id is not null and l.inicio is not null
       ${soloCliente ? q`and v.cliente_id = ${soloCliente}` : q``}
+      ${
+        busqueda
+          ? q`and exists (select 1 from clientes c where c.id = v.cliente_id
+                and (c.nombre ilike ${like} or c.nombre_completo ilike ${like} or c.telefono ilike ${like}
+                  or exists (select 1 from ventas x where x.cliente_id = c.id and x.estado::text in ${q(PENDIENTE)}
+                             and x.codigo::text ilike ${codigo})))`
+          : q``
+      }
     order by v.creado_en`;
   const ids = [...new Set(ventas.map((v) => v.cliente_id))];
   if (!ids.length) return [];

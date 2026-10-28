@@ -1,4 +1,5 @@
 import type postgres from "postgres";
+import { patron } from "./busqueda";
 import { COURIERS, fono, type Courier } from "./central";
 
 export type PrendaE = {
@@ -54,7 +55,10 @@ export function lineasEtiqueta(p: Paquete): [string, string][] {
 export async function cargarEmpaque(
   q: postgres.Sql,
   ids?: number[],
+  busqueda = "", // nick, name, phone, order number or a sale number
 ): Promise<Paquete[]> {
+  const like = patron(busqueda);
+  const numero = patron(busqueda.replace(/^#/, ""));
   const rows = await q`
     select p.id pedido, p.cerrado_en, p.courier::text courier, c.nombre cliente, c.nombre_completo, c.telefono,
            d.rut, d.email, d.telefono telefono_envio, d.direccion, d.ciudad
@@ -64,6 +68,14 @@ export async function cargarEmpaque(
     where p.courier is not null
       and exists (select 1 from ventas v where v.pedido_id = p.id and v.estado = 'por_empaquetar')
       ${ids ? q`and p.id in ${q(ids)}` : q``}
+      ${
+        busqueda
+          ? q`and (c.nombre ilike ${like} or c.nombre_completo ilike ${like} or c.telefono ilike ${like}
+                or p.id::text ilike ${numero}
+                or exists (select 1 from ventas v where v.pedido_id = p.id and v.estado = 'por_empaquetar'
+                           and v.codigo::text ilike ${numero}))`
+          : q``
+      }
     order by c.nombre, p.cerrado_en`;
   if (!rows.length) return [];
   const prendas = await q`

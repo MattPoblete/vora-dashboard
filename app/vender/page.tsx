@@ -4,6 +4,8 @@ import { connection } from "next/server";
 import { db, dbq, esAdmin, requirePermiso } from "@/lib/session";
 import { gruposParaLive, nombreGrupo, type Grupo } from "@/lib/grupos";
 import { Glass } from "@/components/glass";
+import { Buscador } from "@/components/buscador";
+import { leerBusqueda, patron } from "@/lib/busqueda";
 import { iniciarLive } from "./actions";
 import { VentaForm } from "./form";
 import { Lista, type Venta } from "./lista";
@@ -16,6 +18,14 @@ type Activo = {
   vendedores: string | null;
   alias: string | null;
   inicio: Date;
+};
+
+// key -> label; the first is the default. "antigua" is creation time: id grows with it
+const ORDENES = {
+  reciente: "Más recientes",
+  antigua: "Más antiguas",
+  numero: "Número",
+  talla: "Talla",
 };
 
 const titulo = (l: Activo) => l.alias ?? l.vendedores ?? l.nombre;
@@ -81,11 +91,21 @@ function Iniciar({ grupos }: { grupos: Grupo[] }) {
 async function Vender({
   params,
 }: {
-  params: Promise<{ live?: string; nuevo?: string }>;
+  params: Promise<{
+    live?: string;
+    nuevo?: string;
+    q?: string;
+    orden?: string;
+  }>;
 }) {
   await connection();
   const sesion = await requirePermiso("ventas");
-  const { live: liveParam, nuevo } = await params;
+  const {
+    live: liveParam,
+    nuevo,
+    q: busqueda,
+    orden: ordenParam,
+  } = await params;
   const activos = await dbq<
     Activo[]
   >`select l.id, l.nombre, l.vendedores, g.alias, l.inicio from lives l
@@ -113,10 +133,24 @@ async function Vender({
   ).map((r) => r.m as string);
   const materiales = [...new Set([...usados, ...base])];
 
+  // search and order run in sql, so they cover every sale of the live and not just the visible ones
+  const { q, orden } = leerBusqueda(
+    { q: busqueda, orden: ordenParam },
+    Object.keys(ORDENES),
+  );
+  const like = patron(q);
   const ultimas = await dbq`
     select id, codigo, comprador_texto nick, talla, material, detalle, monto,
            (select count(*)::int from reservas_respaldo r where r.venta_id = v.id) respaldo
-    from ventas v where live_id = ${live.id} order by id desc limit 30`;
+    from ventas v where live_id = ${live.id}
+      and (${q} = '' or concat_ws(' ', codigo, comprador_texto, talla, material, detalle) ilike ${like})
+    order by
+      case when ${orden}::text = 'antigua' then id end asc,
+      case when ${orden}::text = 'numero' then codigo end asc,
+      case when ${orden}::text = 'talla'
+        then array_position(array['xxs','xs','s','m','l','xl','xxl','xxxl'], lower(trim(talla))) end asc nulls last,
+      id desc
+    limit 100`;
 
   return (
     <>
@@ -139,8 +173,16 @@ async function Vender({
           <Glass title="Últimas ventas">
             {/* the scroll lives inside: the glass layer is absolutely positioned and would not follow a scrolling card */}
             <div className="max-h-[calc(100vh-14rem)] overflow-y-auto pr-1">
+              <Buscador
+                placeholder="Buscar nick, número, talla…"
+                ordenes={ORDENES}
+              />
               {ultimas.length === 0 ? (
-                <p className="text-muted">Aún no hay ventas en este live.</p>
+                <p className="text-muted">
+                  {q
+                    ? "Ninguna venta coincide con la búsqueda."
+                    : "Aún no hay ventas en este live."}
+                </p>
               ) : (
                 <Lista ventas={ultimas as unknown as Venta[]} />
               )}
@@ -194,7 +236,12 @@ export default function Page(props: PageProps<"/vender">) {
         >
           <Vender
             params={
-              props.searchParams as Promise<{ live?: string; nuevo?: string }>
+              props.searchParams as Promise<{
+                live?: string;
+                nuevo?: string;
+                q?: string;
+                orden?: string;
+              }>
             }
           />
         </Suspense>
