@@ -158,6 +158,29 @@ export async function guardarEnvio(_: Estado, f: FormData): Promise<Estado> {
   }
 }
 
+// local pickup: no courier to pick and no shipping data to fill, so one click is enough to make the order ready to pack.
+// A saved address stays on the pedido (switching back to a courier finds it); pack and dispatch just ignore it
+export async function retiroLocal(_: Estado, f: FormData): Promise<Estado> {
+  const cid = id(f, "cliente");
+  if (!cid) return { error: "Cliente inválido" };
+  return db(async (tx) => {
+    const p = await pedidoAbierto(tx, cid);
+    await tx`update pedidos set courier = 'retiro_tienda' where id = ${p}`;
+    return done("Marcado como retiro en local");
+  });
+}
+
+// back to "courier not chosen yet"
+export async function quitarRetiro(_: Estado, f: FormData): Promise<Estado> {
+  const cid = id(f, "cliente");
+  if (!cid) return { error: "Cliente inválido" };
+  return db(async (tx) => {
+    const p = await pedidoAbierto(tx, cid);
+    await tx`update pedidos set courier = null where id = ${p} and courier = 'retiro_tienda'`;
+    return done("Retiro en local quitado");
+  });
+}
+
 export async function liberarVenta(_: Estado, f: FormData): Promise<Estado> {
   const vid = id(f, "venta");
   if (!vid) return { error: "Venta inválida" };

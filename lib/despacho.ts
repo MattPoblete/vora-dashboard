@@ -24,7 +24,7 @@ export async function cargarDespacho(
            (select array_agg(v.codigo order by v.codigo) from ventas v where v.paquete_id = p.id and v.estado = 'por_enviar') codigos
     from paquetes p
     join clientes c on c.id = p.cliente_id
-    left join direcciones_envio d on d.id = p.direccion_envio_id
+    left join direcciones_envio d on d.id = p.direccion_envio_id and p.courier is distinct from 'retiro_tienda' -- a pickup has no address to show
     where p.recolectado_en is null
       and exists (select 1 from ventas v where v.paquete_id = p.id and v.estado = 'por_enviar')
       ${

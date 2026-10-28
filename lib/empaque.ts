@@ -64,7 +64,7 @@ export async function cargarEmpaque(
            d.rut, d.email, d.telefono telefono_envio, d.direccion, d.ciudad
     from pedidos p
     join clientes c on c.id = p.cliente_id
-    left join direcciones_envio d on d.id = p.direccion_envio_id
+    left join direcciones_envio d on d.id = p.direccion_envio_id and p.courier is distinct from 'retiro_tienda' -- a pickup has no address to show
     where p.courier is not null
       and exists (select 1 from ventas v where v.pedido_id = p.id and v.estado = 'por_empaquetar')
       ${ids ? q`and p.id in ${q(ids)}` : q``}

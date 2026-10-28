@@ -21,6 +21,8 @@ import {
   guardarEnvio,
   liberarVenta,
   quitarPago,
+  quitarRetiro,
+  retiroLocal,
   subirComprobante,
   validarPago,
 } from "./actions";
@@ -238,70 +240,97 @@ export function Card({ t }: { t: Tarjeta }) {
 
             <section className={sec}>
               <h3 className={h3}>Envío</h3>
-              <Form action={guardarEnvio} className="space-y-3">
-                <input type="hidden" name="cliente" value={cid} />
-                <div className="flex flex-wrap gap-2">
-                  {COURIERS.map((c) => (
-                    <label key={c.id}>
-                      <input
-                        type="radio"
-                        name="courier"
-                        value={c.id}
-                        defaultChecked={courier === c.id}
-                        required
-                        className="peer sr-only"
-                      />
-                      <span className="inline-block cursor-pointer rounded-xl border border-border bg-surface-2 px-4 py-2 peer-checked:border-primary peer-checked:bg-primary-soft">
-                        {c.label}
-                      </span>
-                    </label>
-                  ))}
+              {courier === "retiro_tienda" ? (
+                <Form action={quitarRetiro} className="space-y-3">
+                  <input type="hidden" name="cliente" value={cid} />
+                  <p className="rounded-xl bg-success/10 px-4 py-3 text-success-fg">
+                    ✓ Retiro en local: no necesita courier ni datos de envío.
+                  </p>
+                  <Boton className="border border-border bg-surface-2 hover:bg-border">
+                    Cambiar a envío con courier
+                  </Boton>
+                </Form>
+              ) : (
+                <div className="space-y-4">
+                  <Form action={retiroLocal}>
+                    <input type="hidden" name="cliente" value={cid} />
+                    <Boton className="bg-primary text-on-primary hover:bg-primary-hover">
+                      Es retiro en local
+                    </Boton>
+                  </Form>
+                  <p className="text-xs text-muted">
+                    …o elige un courier y completa los datos de envío:
+                  </p>
+                  <Form action={guardarEnvio} className="space-y-3">
+                    <input type="hidden" name="cliente" value={cid} />
+                    <div className="flex flex-wrap gap-2">
+                      {COURIERS.filter((c) => c.id !== "retiro_tienda").map(
+                        (c) => (
+                          <label key={c.id}>
+                            <input
+                              type="radio"
+                              name="courier"
+                              value={c.id}
+                              defaultChecked={courier === c.id}
+                              required
+                              className="peer sr-only"
+                            />
+                            <span className="inline-block cursor-pointer rounded-xl border border-border bg-surface-2 px-4 py-2 peer-checked:border-primary peer-checked:bg-primary-soft">
+                              {c.label}
+                            </span>
+                          </label>
+                        ),
+                      )}
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {(
+                        [
+                          "nombre_completo",
+                          "rut",
+                          "email",
+                          "telefono_envio",
+                          "direccion",
+                          "ciudad",
+                        ] as Campo[]
+                      ).map((k) => (
+                        <label
+                          key={k}
+                          className={k === "direccion" ? "sm:col-span-2" : ""}
+                        >
+                          <span className="mb-1 block text-xs text-muted">
+                            {ETIQUETA[k]}{" "}
+                            <span className="text-muted/60">
+                              ({pedirPara(k)})
+                            </span>
+                          </span>
+                          <input
+                            name={k}
+                            defaultValue={val(k)}
+                            className={campo}
+                            autoComplete="off"
+                          />
+                        </label>
+                      ))}
+                      <label>
+                        <span className="mb-1 block text-xs text-muted">
+                          Teléfono de contacto{" "}
+                          <span className="text-muted/60">(WhatsApp)</span>
+                        </span>
+                        <input
+                          name="telefono"
+                          defaultValue={t.cliente.telefono ?? ""}
+                          className={campo}
+                          placeholder="+56 9 1234 5678"
+                          autoComplete="off"
+                        />
+                      </label>
+                    </div>
+                    <Boton className="border border-border bg-surface-2 hover:bg-border">
+                      Guardar datos de envío
+                    </Boton>
+                  </Form>
                 </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {(
-                    [
-                      "nombre_completo",
-                      "rut",
-                      "email",
-                      "telefono_envio",
-                      "direccion",
-                      "ciudad",
-                    ] as Campo[]
-                  ).map((k) => (
-                    <label
-                      key={k}
-                      className={k === "direccion" ? "sm:col-span-2" : ""}
-                    >
-                      <span className="mb-1 block text-xs text-muted">
-                        {ETIQUETA[k]}{" "}
-                        <span className="text-muted/60">({pedirPara(k)})</span>
-                      </span>
-                      <input
-                        name={k}
-                        defaultValue={val(k)}
-                        className={campo}
-                        autoComplete="off"
-                      />
-                    </label>
-                  ))}
-                  <label>
-                    <span className="mb-1 block text-xs text-muted">
-                      Teléfono de contacto{" "}
-                      <span className="text-muted/60">(WhatsApp)</span>
-                    </span>
-                    <input
-                      name="telefono"
-                      defaultValue={t.cliente.telefono ?? ""}
-                      className={campo}
-                      placeholder="+56 9 1234 5678"
-                      autoComplete="off"
-                    />
-                  </label>
-                </div>
-                <Boton className="border border-border bg-surface-2 hover:bg-border">
-                  Guardar datos de envío
-                </Boton>
-              </Form>
+              )}
             </section>
           </Step>
           <Step title="Listo">

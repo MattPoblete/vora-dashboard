@@ -86,7 +86,7 @@ export function calcFaltantes(
   else if (!t.pagos.some((p) => p.validado)) f.push("Validar el comprobante");
   else if (t.pagado < t.total)
     f.push(`Falta pago de $${(t.total - t.pagado).toLocaleString("es-CL")}`);
-  if (!t.courier) f.push("Elegir courier");
+  if (!t.courier) f.push("Elegir courier o retiro en local");
   else {
     const datos: Record<Campo, string | null | undefined> = {
       nombre_completo: t.cliente.nombre_completo,
