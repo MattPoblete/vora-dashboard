@@ -14,9 +14,11 @@ import {
   DashboardSquare01Icon,
   DeliveryTruck01Icon,
   Logout01Icon,
+  Moon02Icon,
   Package01Icon,
   Settings01Icon,
   ShoppingBag01Icon,
+  Sun01Icon,
   User02Icon,
   UserSettings01Icon,
   Wallet01Icon,
@@ -24,7 +26,7 @@ import {
 import AnimatedList from "./AnimatedList";
 import GlassSurface from "./GlassSurface";
 import { IconoActivo } from "./icono-activo";
-import { useEscritorio } from "./tema";
+import { alternarTema, useEscritorio, useOscuro } from "./tema";
 
 // one icon per destination, so each button reads at a glance
 const ICONOS = {
@@ -192,6 +194,7 @@ function MenuUsuario({
 }) {
   const router = useRouter();
   const actual = usePathname();
+  const oscuro = useOscuro();
   const [abierto, setAbierto] = useState(false);
   const caja = useRef<HTMLDivElement>(null);
   const formSalir = useRef<HTMLFormElement>(null);
@@ -219,6 +222,12 @@ function MenuUsuario({
       icon: glifo(UserSettings01Icon),
       title: "Ajustes del perfil",
       description: "Nombre, foto, teléfono y contraseña",
+    },
+    {
+      id: "tema",
+      icon: glifo(oscuro ? Sun01Icon : Moon02Icon),
+      title: oscuro ? "Modo claro" : "Modo oscuro",
+      description: oscuro ? "Ahora en oscuro" : "Ahora en claro",
     },
     ...(admin
       ? [
@@ -284,6 +293,8 @@ function MenuUsuario({
             displayScrollbar={false}
             style={TEMA_LISTA}
             onItemSelect={(it: { id: string }) => {
+              // the menu stays open so the change is seen right where it was made
+              if (it.id === "tema") return alternarTema();
               setAbierto(false);
               if (it.id === "perfil") router.push("/cuenta");
               else if (it.id === "admin") router.push("/configuracion");

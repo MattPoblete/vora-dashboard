@@ -24,6 +24,15 @@ function oscuro() {
   return forzado ? forzado === "dark" : window.matchMedia(MQ).matches;
 }
 
+// flips light/dark and remembers it; the inline script in app/layout.tsx puts it back before the first paint
+export function alternarTema() {
+  const siguiente = oscuro() ? "light" : "dark";
+  document.documentElement.dataset.theme = siguiente;
+  try {
+    localStorage.setItem("tema", siguiente);
+  } catch {} // private window: it just won't persist
+}
+
 // for the few vendored components that need to know the theme in JS (the rest follows the CSS tokens)
 export const useOscuro = () =>
   useSyncExternalStore(suscribir, oscuro, () => true);
